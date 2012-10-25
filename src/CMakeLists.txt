@@ -1,0 +1,1 @@
+ADD_LIBRARY(r2d2 r2d2.cpp)
