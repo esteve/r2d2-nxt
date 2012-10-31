@@ -112,10 +112,18 @@ Sensor::Sensor(NXT *nxt, uint8_t port) {
     this->port_ = port;
 }
 
-int Sensor::getValue() {
+NXT* Sensor::getNXT() {
+    return this->nxt_;
+}
+
+uint8_t Sensor::getPort() {
+    return this->port_;
+}
+
+int TouchSensor::getValue() {
     Message msg(true, true);
     msg.add_u8(Message::GET_VALUE);
-    msg.add_u8(this->port_);
+    msg.add_u8(this->getPort());
 
     std::string out = msg.get_value();
 
@@ -123,20 +131,15 @@ int Sensor::getValue() {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     return responseBuffer[13] * 256 + responseBuffer[12];
 }
 
-SonarSensor::SonarSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) {
-    this->nxt_ = nxt;
-    this->port_ = port;
-}
-
-int SonarSensor::lsGetStatus(uint8_t *outbuf) {
+int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
     Message msg(true, true);
     msg.add_u8(Message::LS_GET_STATUS);
-    msg.add_u8(this->port_);
+    msg.add_u8(this->getPort());
 
     std::string out = msg.get_value();
 
@@ -144,17 +147,17 @@ int SonarSensor::lsGetStatus(uint8_t *outbuf) {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
 
     return static_cast<int>(responseBuffer[3]);
 }
 
-void SonarSensor::lsRead(uint8_t *outbuf) {
+void DigitalSensor::lsRead(uint8_t *outbuf) {
     Message msg(true, true);
     msg.add_u8(Message::LS_READ);
-    msg.add_u8(this->port_);
+    msg.add_u8(this->getPort());
 
     std::string out = msg.get_value();
 
@@ -162,15 +165,15 @@ void SonarSensor::lsRead(uint8_t *outbuf) {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
 }
 
-void SonarSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t outSize) {
+void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t outSize) {
     Message msg(true, true);
     msg.add_u8(Message::LS_WRITE);
-    msg.add_u8(this->port_);
+    msg.add_u8(this->getPort());
     msg.add_u8(indata.size());
     msg.add_u8(outSize);
     msg.add_string(indata.size(), indata);
@@ -181,13 +184,13 @@ void SonarSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t out
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->nxt_->sendDirectCommand(true, (int8_t *)(tosend.c_str()), tosend.size(), responseBuffer, sizeof(responseBuffer));
+    this->getNXT()->sendDirectCommand(true, (int8_t *)(tosend.c_str()), tosend.size(), responseBuffer, sizeof(responseBuffer));
 
     std::memcpy(outBuf, responseBuffer, outSize * sizeof(uint8_t));
 }
 
 
-int SonarSensor::getSonarValue() {
+int SonarSensor::getValue() {
     Message msg(true, true);
     msg.add_u8(0x02); // I2C_DEV
     msg.add_u8(0x41); // COMMAND
@@ -347,7 +350,7 @@ Sensor* NXT::makeTouch(uint8_t port) {
 
     std::string out = msg.get_value();
     this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new Sensor(this, port);
+    return new TouchSensor(this, port);
 }
 
 SonarSensor* NXT::makeSonar(uint8_t port) {

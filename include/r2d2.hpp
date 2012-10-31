@@ -160,24 +160,40 @@ private:
     NXT *nxt_;
     uint8_t port_;
 
+protected:
+    NXT* getNXT();
+    uint8_t getPort();
+
 public:
     Sensor(NXT *nxt, uint8_t port);
 
+    virtual int getValue() = 0;
+};
+
+class AnalogSensor : public Sensor {
+public:
+    AnalogSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+};
+
+class TouchSensor : public AnalogSensor {
+public:
+    TouchSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
     int getValue();
 };
 
-class SonarSensor : Sensor {
-private:
-    NXT *nxt_;
-    uint8_t port_;
-
+class DigitalSensor : public Sensor {
 public:
-    SonarSensor(NXT *nxt, uint8_t port);
-
+    DigitalSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+protected:
     int lsGetStatus(uint8_t *);
     void lsRead(uint8_t *);
     void lsWrite(const std::string&, uint8_t *, size_t);
-    int getSonarValue();
+};
+
+class SonarSensor : public DigitalSensor {
+public:
+    SonarSensor(NXT *nxt, uint8_t port) : DigitalSensor(nxt, port) { };
+    int getValue();
 };
 
 
