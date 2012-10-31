@@ -1,5 +1,7 @@
-#include <r2d2.hpp>
 #include <iostream>
+
+#include <r2d2.hpp>
+#include <r2d2/usb.hpp>
 
 int main()
 {
