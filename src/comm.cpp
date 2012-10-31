@@ -4,7 +4,6 @@
 #include <boost/format.hpp>
 #include <iostream>
 #include <iomanip>
-#include <cstring>
 
 Message::Message(bool isDirect, bool requiresResponse) {
     this->isDirect_ = isDirect;
@@ -228,6 +227,117 @@ int SonarSensor::getSonarValue() {
     }
 }
 
+BTComm::BTComm(struct sockaddr_rc addr) {
+    this->addr_ = addr;
+}
+
+bool BTComm::open() {
+    this->sock_ = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    int status = connect(this->sock_, (struct sockaddr *)&(this->addr_), sizeof(this->addr_));
+    return (status == 0);
+}
+
+void BTComm::devWrite(uint8_t * buf, int buf_size) {
+    uint8_t bf = buf_size;
+    uint8_t header[] = {bf, 0x00};
+    uint8_t outBuf[2 + buf_size];
+    memcpy(outBuf, header, sizeof(header));
+    memcpy(outBuf + 2, buf, buf_size);
+    write(this->sock_, outBuf, sizeof(outBuf));
+}
+
+void BTComm::devRead(uint8_t * buf, int buf_size) {
+    char reply[64];
+    memset(reply, 0, sizeof(reply));
+
+    // read data from the client
+    int bytes_read = read(this->sock_, reply, 2);
+
+    if ( bytes_read > 0 ) {
+        int replylength = reply[0] + (reply[1] * 256);
+        bytes_read = read(this->sock_, reply, replylength);
+        if (bytes_read == replylength) {
+            memcpy(buf, reply, buf_size);
+        }
+    }
+}
+
+bool USBComm::open() {
+
+    int nEp = 0;
+
+    if (this->usb_dev_ == 0) {
+        std::cerr << "Device not found!" << std::endl;
+        return false;
+    }
+
+    int r = libusb_open(this->usb_dev_, &(this->pUSBHandle_));
+
+    if (r != 0) {
+        std::cerr << "Not able to claim the USB device" << std::endl;
+        return false;
+    } else {
+        libusb_config_descriptor *config;
+        libusb_get_config_descriptor(this->usb_dev_, 0, &config);
+        if (config->interface) {
+            if (config->interface->altsetting) {
+                r = libusb_claim_interface(this->pUSBHandle_, config->interface->altsetting->bInterfaceNumber);
+                if ((nEp = config->interface->altsetting->bNumEndpoints)) {
+                    if (config->interface->altsetting->endpoint) {
+                        this->ucEpIn_ = (config->interface->altsetting->endpoint[0].bEndpointAddress);
+                        if (nEp > 1) {
+                            this->ucEpOut_ = (config->interface->altsetting->endpoint[1].bEndpointAddress);
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
+void USBComm::devWrite(uint8_t * buf, int buf_size) {
+    boost::mutex::scoped_lock lock(this->io_mutex);
+    if (this->pUSBHandle_) {
+        int actual_length;
+        int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpIn_, buf, buf_size, &actual_length, TIMEOUT);
+        if (r == 0 && actual_length == buf_size) {
+        } else {
+            std::cerr << "ERROR WRITING" << std::endl;
+            std::cerr << "READ: " << actual_length << std::endl;
+            std::cerr << "BUF LEN: " << buf_size << std::endl;
+            std::cerr << "RES: " << r << std::endl;
+        }
+    }
+}
+
+void USBComm::devRead(uint8_t * buf, int buf_size) {
+    boost::mutex::scoped_lock lock(this->io_mutex);
+    if (this->pUSBHandle_) {
+        int actual_length;
+        int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpOut_, buf, buf_size, &actual_length, TIMEOUT);
+        if (r == 0 && actual_length <= buf_size) {
+        } else {
+            std::cerr << "ERROR READING" << std::endl;
+            std::cerr << "READ: " << actual_length << std::endl;
+            std::cerr << "BUF LEN: " << buf_size << std::endl;
+            std::cerr << "RES: " << r << std::endl;
+        }
+    }
+}
+
+USBComm::USBComm(libusb_context *ctx, libusb_device *usb_dev) {
+    this->ctx_ = ctx;
+    this->usb_dev_ = usb_dev;
+}
+
+USBComm::~USBComm() {
+    libusb_unref_device(this->usb_dev_);
+    libusb_close(this->pUSBHandle_);
+}
+
+
 Sensor* NXT::makeTouch(uint8_t port) {
     Message msg(true, false);
     msg.add_u8(Message::SET_INPUT_MODE);
@@ -340,6 +450,9 @@ void NXT::sendSystemCommand(bool response, int8_t * dc_buf,
     }
 }
 
+void NXT::submitDirectCommand(Command *command) {
+}
+
 void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
                             size_t dc_buf_size, uint8_t * re_buf, size_t re_buf_size) {
     uint8_t buf[dc_buf_size + 1];
@@ -353,4 +466,124 @@ void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
     if (response) {
         this->comm_->devRead(re_buf, re_buf_size);
     }
+}
+
+std::vector<NXT *>* USBNXTManager::list() {
+
+    // List all the NXT devices
+    std::vector<NXT*>* v = new std::vector<NXT*>();
+
+    libusb_device **devs;
+    libusb_context *ctx = NULL;
+    libusb_device *dev;
+
+    int r;
+    ssize_t cnt; //holding number of devices in list
+
+    r = libusb_init(&ctx);
+
+    if (r < 0) {
+        std::cout<<"Init Error "<<r<<std::endl; //there was an error
+        return v;
+    }
+
+    libusb_set_debug(ctx, 3); //set verbosity level to 3, as suggested in the documentation
+
+    cnt = libusb_get_device_list(ctx, &devs); //get the list of devices
+    if (cnt < 0) {
+        std::cout<<"Get Device Error"<<std::endl; //there was an error
+        return v;
+    }
+
+    std::cout<<cnt<<" Devices in list."<<std::endl; //print total number of usb devices
+    ssize_t i; //for iterating through the list
+    for (i = 0; i < cnt; i++) {
+        libusb_device_descriptor desc;
+        int r = libusb_get_device_descriptor(devs[i], &desc);
+        if (r < 0) {
+            std::cout<<"failed to get device descriptor"<<std::endl;
+            continue;
+        }
+
+
+        if (desc.idVendor == NXT_VENDOR_ID && desc.idProduct == NXT_PRODUCT_ID) {
+            libusb_device_handle *devh = NULL;
+            libusb_open(devs[i], &devh);
+            libusb_reset_device(devh);
+            libusb_close(devh);
+        }
+    }
+
+
+    cnt = libusb_get_device_list(ctx, &devs); //get the list of devices
+    if (cnt < 0) {
+        std::cout<<"Get Device Error"<<std::endl; //there was an error
+        return v;
+    }
+
+    std::cout<<cnt<<" Devices in list."<<std::endl; //print total number of usb devices
+    for (i = 0; i < cnt; i++) {
+        libusb_device_descriptor desc;
+        int r = libusb_get_device_descriptor(devs[i], &desc);
+        if (r < 0) {
+            std::cout<<"failed to get device descriptor"<<std::endl;
+            continue;
+        }
+
+        if (desc.idVendor == NXT_VENDOR_ID && desc.idProduct == NXT_PRODUCT_ID) {
+            dev = libusb_ref_device(devs[i]);
+            USBComm *comm = new USBComm(ctx, dev);
+            NXT *nxt = new NXT(comm);
+            v->push_back(nxt);
+        }
+    }
+    libusb_free_device_list(devs, 1); //free the list, unref the devices in it
+//        libusb_exit(ctx); //close the session
+    return v;
+}
+
+std::vector<NXT *>* BTNXTManager::list() {
+
+    // List all the NXT devices
+    std::vector<NXT*>* v = new std::vector<NXT*>();
+
+    inquiry_info *ii = NULL;
+    int max_rsp, num_rsp;
+    int dev_id, sock, len, flags;
+    int i;
+
+    dev_id = hci_get_route(NULL);
+    sock = hci_open_dev( dev_id );
+    if (dev_id < 0 || sock < 0) {
+        perror("opening socket");
+        exit(1);
+    }
+
+    len  = 8;
+    max_rsp = 255;
+    flags = IREQ_CACHE_FLUSH;
+    ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
+
+    num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
+    if ( num_rsp < 0 ) perror("hci_inquiry");
+
+    for (i = 0; i < num_rsp; i++) {
+        bdaddr_t *ba = &(ii+i)->bdaddr;
+
+        if (ba->b[5] == 0x00 && ba->b[4] == 0x16 && ba->b[3] == 0x53) {
+            struct sockaddr_rc addr;
+            // set the connection parameters (who to connect to)
+            addr.rc_family = AF_BLUETOOTH;
+            addr.rc_channel = (uint8_t) 1;
+            memcpy(&(addr.rc_bdaddr), ba, sizeof(bdaddr_t));
+
+            BTComm *comm = new BTComm(addr);
+            NXT *nxt = new NXT(comm);
+            v->push_back(nxt);
+        }
+    }
+
+    free( ii );
+    close( sock );
+    return v;
 }
