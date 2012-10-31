@@ -1,25 +1,10 @@
-#include <iostream>
-#include <vector>
+#ifndef R2D2_HPP
+#define R2D2_HPP
+
 #include <cstdint>
-#include <string>
-#include <cstring>
-
-#include <libusb-1.0/libusb.h>
-
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
-#include <stdlib.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
 #include <sstream>
-#include <boost/format.hpp>
-#include <iomanip>
 
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
+#include <r2d2/comm.hpp>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
@@ -67,32 +52,6 @@ public:
     std::string get_value();
 };
 
-class Comm {
-public:
-    virtual void devWrite(uint8_t *, int) = 0;
-    virtual void devRead(uint8_t *, int) = 0;
-    virtual bool open() = 0;
-};
-
-class Command {
-    virtual uint8_t * serialize() = 0;
-};
-
-class SetTouchSensor : public Command {
-private:
-    uint8_t port_;
-
-public:
-    SetTouchSensor(uint8_t port) {
-        this->port_ = port;
-    }
-
-    uint8_t * serialize() {
-        uint8_t *buffer = new uint8_t[5] {0x00, 0x05, this->port_, 0x01, 0x20};
-        return buffer;
-    }
-};
-
 class Sensor;
 
 class SonarSensor;
@@ -132,8 +91,6 @@ public:
     SonarSensor *makeSonar(uint8_t);
 
     Motor *makeMotor(uint8_t);
-
-    void submitDirectCommand(Command *);
 
     void halt();
 
@@ -195,59 +152,4 @@ public:
     SonarSensor(NXT *nxt, uint8_t port) : DigitalSensor(nxt, port) { };
     int getValue();
 };
-
-
-class BTComm : public Comm {
-private:
-    struct sockaddr_rc addr_;
-    int sock_;
-public:
-    BTComm(struct sockaddr_rc addr);
-
-    bool open();
-
-    void devWrite(uint8_t * buf, int buf_size);
-
-    void devRead(uint8_t * buf, int buf_size);
-};
-
-class USBComm : public Comm {
-private:
-    libusb_device *usb_dev_;
-    libusb_device_handle *pUSBHandle_;
-    int ucEpOut_;
-    int ucEpIn_;
-    libusb_context *ctx_;
-    static const int TIMEOUT = 500;
-
-    boost::mutex io_mutex;
-//0x0BB8;
-
-public:
-
-    bool open();
-
-    void devWrite(uint8_t * buf, int buf_size);
-
-    void devRead(uint8_t * buf, int buf_size);
-
-    USBComm(libusb_context *ctx, libusb_device *usb_dev);
-
-    ~USBComm();
-};
-
-class USBNXTManager {
-    static const int NXT_VENDOR_ID = 0x0694;
-    static const int NXT_PRODUCT_ID = 0x0002;
-
-public:
-    std::vector<NXT *>* list();
-};
-
-class BTNXTManager {
-    static const int NXT_VENDOR_ID = 0x0694;
-    static const int NXT_PRODUCT_ID = 0x0002;
-
-public:
-    std::vector<NXT *>* list();
-};
+#endif
