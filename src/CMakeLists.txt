@@ -22,10 +22,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     set(R2D2SRC ${R2D2SRC} bluetooth.cpp)
 endif()
 
-find_package(Boost COMPONENTS thread)
-include_directories(${Boost_INCLUDE_DIRS})
-set(R2D2LIBS ${R2D2LIBS} ${Boost_LIBRARIES})
-
 add_library(r2d2shared SHARED ${R2D2SRC})
 add_library(r2d2static STATIC ${R2D2SRC})
 

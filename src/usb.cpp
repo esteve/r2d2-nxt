@@ -1,7 +1,6 @@
 #include <r2d2/usb.hpp>
 
 #include <sstream>
-#include <boost/format.hpp>
 #include <iostream>
 #include <iomanip>
 
@@ -41,7 +40,7 @@ bool USBComm::open() {
 }
 
 void USBComm::devWrite(uint8_t * buf, int buf_size) {
-    boost::mutex::scoped_lock lock(this->io_mutex);
+    std::lock_guard<std::mutex> lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
         int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpIn_, buf, buf_size, &actual_length, TIMEOUT);
@@ -56,7 +55,7 @@ void USBComm::devWrite(uint8_t * buf, int buf_size) {
 }
 
 void USBComm::devRead(uint8_t * buf, int buf_size) {
-    boost::mutex::scoped_lock lock(this->io_mutex);
+    std::lock_guard<std::mutex> lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
         int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpOut_, buf, buf_size, &actual_length, TIMEOUT);

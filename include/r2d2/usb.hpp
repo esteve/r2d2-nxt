@@ -6,7 +6,7 @@
 
 #include <libusb-1.0/libusb.h>
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 
 #include <r2d2.hpp>
 
@@ -21,7 +21,7 @@ private:
     libusb_context *ctx_;
     static const int TIMEOUT = 500;
 
-    boost::mutex io_mutex;
+    std::mutex io_mutex;
 //0x0BB8;
 
 public:
