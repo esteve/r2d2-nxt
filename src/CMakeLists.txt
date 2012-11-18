@@ -1,6 +1,13 @@
+include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag(-Wall HAS_WALL)
-if (HAS_WALL)
+
+check_c_compiler_flag(-Wall C_HAS_WALL)
+if (C_HAS_WALL)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+endif()
+
+check_cxx_compiler_flag(-Wall CXX_HAS_WALL)
+if (CXX_HAS_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
@@ -19,7 +26,7 @@ set(R2D2LIBS ${R2D2LIBS} usb-1.0)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     set(R2D2LIBS ${R2D2LIBS} bluetooth)
-    set(R2D2SRC ${R2D2SRC} bluetooth.cpp)
+    set(R2D2SRC ${R2D2SRC} bluetooth.cpp bluetooth_bridge.c)
 endif()
 
 find_package(Boost COMPONENTS thread)

@@ -19,34 +19,23 @@
 
 #ifndef R2D2_BLUETOOTH_HPP
 #define R2D2_BLUETOOTH_HPP
-#include <vector>
-#include <cstdint>
-
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
-#include <stdlib.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-
 #include <r2d2.hpp>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
 class BTComm : public Comm {
 private:
-    struct sockaddr_rc addr_;
+    void *addr_; // this is actually a pointer to a struct sockaddr_rc
     int sock_;
 public:
-    BTComm(struct sockaddr_rc addr);
+    BTComm(void *addr);
+    ~BTComm();
 
     bool open();
 
-    void devWrite(uint8_t * buf, int buf_size);
+    void devWrite(uint8_t *buf, int buf_size);
 
-    void devRead(uint8_t * buf, int buf_size);
+    void devRead(uint8_t *buf, int buf_size);
 };
 
 class BTNXTManager {
@@ -56,4 +45,6 @@ class BTNXTManager {
 public:
     std::vector<NXT *>* list();
 };
+
+void addBTDeviceToList(void *addr, void *arg);
 #endif
