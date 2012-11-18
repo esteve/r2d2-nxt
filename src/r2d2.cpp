@@ -1,7 +1,6 @@
 #include <r2d2.hpp>
 
 #include <sstream>
-#include <boost/format.hpp>
 #include <iostream>
 #include <iomanip>
 #include <cstring>
