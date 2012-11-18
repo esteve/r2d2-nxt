@@ -1,8 +1,10 @@
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
 
 #include <r2d2/bluetooth_bridge.h>
 

@@ -304,7 +304,7 @@ void NXT::getDeviceInfo(uint8_t * outBuf, size_t size) {
 
 std::string NXT::getName() {
     uint8_t outBuf[33];
-    char name[15];
+    char name[16];
 
     name[0] = '\0';
 
