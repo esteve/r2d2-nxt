@@ -22,10 +22,16 @@
 
 #include <cstdint>
 #include <sstream>
-
-#include <r2d2/comm.hpp>
+#include <vector>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
+
+class Comm {
+public:
+    virtual void devWrite(uint8_t *, int) = 0;
+    virtual void devRead(uint8_t *, int) = 0;
+    virtual bool open() = 0;
+};
 
 class Mode {
 public:
@@ -170,5 +176,10 @@ class SonarSensor : public DigitalSensor {
 public:
     SonarSensor(NXT *nxt, uint8_t port) : DigitalSensor(nxt, port) { };
     int getValue();
+};
+
+class NXTManager {
+public:
+    virtual std::vector<NXT *>* list() = 0;
 };
 #endif

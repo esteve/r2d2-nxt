@@ -19,6 +19,7 @@
 
 #ifndef R2D2_BLUETOOTH_HPP
 #define R2D2_BLUETOOTH_HPP
+#include <vector>
 #include <r2d2.hpp>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
@@ -38,7 +39,7 @@ public:
     void devRead(uint8_t *buf, int buf_size);
 };
 
-class BTNXTManager {
+class BTNXTManager : public NXTManager {
     static const int NXT_VENDOR_ID = 0x0694;
     static const int NXT_PRODUCT_ID = 0x0002;
 
