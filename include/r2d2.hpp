@@ -61,6 +61,9 @@ public:
 
     static const int START_MOTOR = 0x04;
     static const int STOP_MOTOR = 0x04;
+    static const int RESET_ROTATION_COUNT = 0x0A;
+
+    static const int PLAY_TONE = 0x03;
 
     Message(bool isDirect, bool requiresResponse);
 
@@ -120,6 +123,8 @@ public:
     void halt();
 
     bool isHalted() const;
+
+    void playTone(int frequency, int duration);
 };
 
 class Motor {
@@ -135,6 +140,8 @@ public:
     void setReverse(uint8_t power);
 
     void stop(bool brake);
+
+    void resetRotationCount(bool relative);
 };
 
 class Sensor {

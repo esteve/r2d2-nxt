@@ -108,6 +108,18 @@ void Motor::stop(bool brake) {
     this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
+void Motor::resetRotationCount(bool relative) {
+    Message msg(true, false);
+    msg.add_u8(Message::RESET_ROTATION_COUNT);
+    msg.add_u8(this->port_);
+    msg.add_u8(relative);
+
+    std::string out = msg.get_value();
+
+    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+}
+
+
 Sensor::Sensor(NXT *nxt, uint8_t port) {
     this->nxt_ = nxt;
     this->port_ = port;
@@ -356,4 +368,17 @@ void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
     if (response) {
         this->comm_->devRead(re_buf, re_buf_size);
     }
+}
+
+void NXT::playTone(int frequency, int duration) {
+    Message msg(true, false);
+    msg.add_u8(Message::PLAY_TONE);
+    msg.add_u8(frequency % 256);
+    msg.add_u8((frequency-(frequency%256))/256);
+    msg.add_u8(duration % 256);
+    msg.add_u8((duration-(duration%256))/256);
+
+    std::string out = msg.get_value();
+
+    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
