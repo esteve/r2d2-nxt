@@ -1,13 +1,29 @@
+#include <vector>
+#include <cstring>
 #include <r2d2.hpp>
+#include <r2d2/bluetooth_bridge.h>
 #include <r2d2/bluetooth.hpp>
 
-BTComm::BTComm(struct sockaddr_rc addr) {
+BTComm::BTComm(void *addr) {
     this->addr_ = addr;
+    // this is actually a pointer to a struct sockaddr_rc
+    // but bluetooth.h can't be included if using std=c++0x
+}
+
+BTComm::~BTComm() {
+    free(this->addr_);
+}
+
+void addBTDeviceToList(void *addr, void *arg) {
+    BTComm *comm = new BTComm(addr);
+    NXT *nxt = new NXT(comm);
+    std::vector<NXT *> *v = static_cast< std::vector<NXT *> *>(arg);
+    v->push_back(nxt);
 }
 
 bool BTComm::open() {
-    this->sock_ = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-    int status = connect(this->sock_, (struct sockaddr *)&(this->addr_), sizeof(this->addr_));
+    this->sock_ = r2d2_bt_create_socket();
+    int status = r2d2_bt_connect_socket(this->sock_, this->addr_);
     return (status == 0);
 }
 
@@ -41,43 +57,7 @@ std::vector<NXT *>* BTNXTManager::list() {
     // List all the NXT devices
     std::vector<NXT*>* v = new std::vector<NXT*>();
 
-    inquiry_info *ii = NULL;
-    int max_rsp, num_rsp;
-    int dev_id, sock, len, flags;
-    int i;
+    r2d2_bt_scan(addBTDeviceToList, v);
 
-    dev_id = hci_get_route(NULL);
-    sock = hci_open_dev( dev_id );
-    if (dev_id < 0 || sock < 0) {
-        perror("opening socket");
-        exit(1);
-    }
-
-    len  = 8;
-    max_rsp = 255;
-    flags = IREQ_CACHE_FLUSH;
-    ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
-
-    num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-    if ( num_rsp < 0 ) perror("hci_inquiry");
-
-    for (i = 0; i < num_rsp; i++) {
-        bdaddr_t *ba = &(ii+i)->bdaddr;
-
-        if (ba->b[5] == 0x00 && ba->b[4] == 0x16 && ba->b[3] == 0x53) {
-            struct sockaddr_rc addr;
-            // set the connection parameters (who to connect to)
-            addr.rc_family = AF_BLUETOOTH;
-            addr.rc_channel = (uint8_t) 1;
-            memcpy(&(addr.rc_bdaddr), ba, sizeof(bdaddr_t));
-
-            BTComm *comm = new BTComm(addr);
-            NXT *nxt = new NXT(comm);
-            v->push_back(nxt);
-        }
-    }
-
-    free( ii );
-    close( sock );
     return v;
 }

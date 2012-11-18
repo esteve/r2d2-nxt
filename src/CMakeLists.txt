@@ -19,7 +19,7 @@ set(R2D2LIBS ${R2D2LIBS} usb-1.0)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     set(R2D2LIBS ${R2D2LIBS} bluetooth)
-    set(R2D2SRC ${R2D2SRC} bluetooth.cpp)
+    set(R2D2SRC ${R2D2SRC} bluetooth.cpp bluetooth_bridge.c)
 endif()
 
 find_package(Boost COMPONENTS thread)
