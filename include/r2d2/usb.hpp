@@ -56,7 +56,7 @@ public:
     ~USBComm();
 };
 
-class USBNXTManager {
+class USBNXTManager : public NXTManager {
     static const int NXT_VENDOR_ID = 0x0694;
     static const int NXT_PRODUCT_ID = 0x0002;
 
