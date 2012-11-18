@@ -37,6 +37,7 @@ class Mode {
 public:
     static const int RAW = 0x00;
     static const int BOOLEAN = 0x20;
+    static const int PCT_FULL_SCALE = 0x80;
 };
 
 class Message {
@@ -62,8 +63,13 @@ public:
     static const int START_MOTOR = 0x04;
     static const int STOP_MOTOR = 0x04;
     static const int RESET_ROTATION_COUNT = 0x0A;
+    static const int GET_ROTATION_COUNT = 0x06;
 
     static const int PLAY_TONE = 0x03;
+    static const int STOP_SOUND = 0x0C;
+
+    static const int ACTIVE_LIGHT = 0x05;
+    static const int PASSIVE_LIGHT = 0x06;
 
     Message(bool isDirect, bool requiresResponse);
 
@@ -83,6 +89,8 @@ public:
 class Sensor;
 
 class SonarSensor;
+class TouchSensor;
+class LightSensor;
 
 class Motor;
 
@@ -114,9 +122,11 @@ public:
 
     void getDeviceInfo(uint8_t*, size_t);
 
-    Sensor *makeTouch(uint8_t);
+    TouchSensor *makeTouch(uint8_t);
 
     SonarSensor *makeSonar(uint8_t);
+
+    LightSensor *makeLight(uint8_t, bool);
 
     Motor *makeMotor(uint8_t);
 
@@ -125,6 +135,7 @@ public:
     bool isHalted() const;
 
     void playTone(int frequency, int duration);
+    void stopSound();
 };
 
 class Motor {
@@ -142,6 +153,8 @@ public:
     void stop(bool brake);
 
     void resetRotationCount(bool relative);
+
+    int getRotationCount();
 };
 
 class Sensor {
@@ -162,12 +175,17 @@ public:
 class AnalogSensor : public Sensor {
 public:
     AnalogSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+    int getValue();
 };
 
 class TouchSensor : public AnalogSensor {
 public:
     TouchSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
-    int getValue();
+};
+
+class LightSensor : public AnalogSensor {
+public:
+    LightSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
 };
 
 class DigitalSensor : public Sensor {

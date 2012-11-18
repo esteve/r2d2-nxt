@@ -133,7 +133,7 @@ uint8_t Sensor::getPort() {
     return this->port_;
 }
 
-int TouchSensor::getValue() {
+int AnalogSensor::getValue() {
     Message msg(true, true);
     msg.add_u8(Message::GET_VALUE);
     msg.add_u8(this->getPort());
@@ -243,7 +243,7 @@ int SonarSensor::getValue() {
     }
 }
 
-Sensor* NXT::makeTouch(uint8_t port) {
+TouchSensor* NXT::makeTouch(uint8_t port) {
     Message msg(true, false);
     msg.add_u8(Message::SET_INPUT_MODE);
     msg.add_u8(port);
@@ -254,6 +254,25 @@ Sensor* NXT::makeTouch(uint8_t port) {
     this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
     return new TouchSensor(this, port);
 }
+
+LightSensor* NXT::makeLight(uint8_t port, bool active)
+{
+    Message msg(true, false);
+    msg.add_u8(Message::SET_INPUT_MODE);
+    msg.add_u8(port);
+
+    if(active) {
+        msg.add_u8(Message::ACTIVE_LIGHT);
+    } else {
+        msg.add_u8(Message::PASSIVE_LIGHT);
+    }
+    msg.add_u8(Mode::PCT_FULL_SCALE);
+
+    std::string out = msg.get_value();
+    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    return new LightSensor(this, port);
+}
+
 
 SonarSensor* NXT::makeSonar(uint8_t port) {
     // 0x05 -> setInputMode
@@ -380,5 +399,40 @@ void NXT::playTone(int frequency, int duration) {
 
     std::string out = msg.get_value();
 
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+}
+
+void NXT::stopSound() {
+    Message msg(true, false);
+    msg.add_u8(Message::STOP_SOUND);
+
+    std::string out = msg.get_value();
+
+    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+}
+
+int Motor::getRotationCount() {
+    Message msg(true, true);
+    msg.add_u8(Message::GET_ROTATION_COUNT);
+    msg.add_u8(this->port_);
+
+    std::string out = msg.get_value();
+
+    uint8_t responseBuffer[24];
+
+    memset(responseBuffer, 1, sizeof(responseBuffer));
+
+    this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+
+    int i = responseBuffer[20];
+    if(i < 0)
+            i = 256 + i;
+    if(responseBuffer[22] == -1)
+            responseBuffer[22] = 0;
+    if(responseBuffer[23] == -1)
+            responseBuffer[23] = 0;
+
+    int tacho = responseBuffer[23]*16777216+responseBuffer[22]*65536+responseBuffer[21]*256+i;
+
+    return tacho;
 }
