@@ -71,7 +71,11 @@ public:
     static const int ACTIVE_LIGHT = 0x05;
     static const int PASSIVE_LIGHT = 0x06;
 
+    static const int GET_FIRMWARE_VERSION = 0x88;
+
     Message(bool isDirect, bool requiresResponse);
+
+    Message(const std::string &s);
 
     bool requiresResponse() const;
 
@@ -84,6 +88,14 @@ public:
     void add_string(size_t n_bytes, const std::string& v);
 
     std::string get_value();
+
+    uint32_t parse_u32();
+
+    int32_t parse_s32();
+
+    uint16_t parse_u16();
+
+    int16_t parse_s16();
 };
 
 class Sensor;

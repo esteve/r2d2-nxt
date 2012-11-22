@@ -11,6 +11,10 @@ Message::Message(bool isDirect, bool requiresResponse) {
     this->requiresResponse_ = requiresResponse;
 }
 
+Message::Message(const std::string &s) {
+    this->sstream_.str(s);
+}
+
 bool Message::requiresResponse() const {
     return this->requiresResponse_;
 }
@@ -30,6 +34,31 @@ void Message::add_s8(int8_t v) {
 void Message::add_string(size_t n_bytes, const std::string& v) {
     this->sstream_ << std::setfill(static_cast<char>(0x00)) << std::left << std::setw(n_bytes) << v;
 }
+
+uint32_t Message::parse_u32() {
+    char v[4];
+    this->sstream_.read(v, 4);
+    return (v[3] << 24) + (v[2] << 16) + (v[1] << 8) + v[0];
+}
+
+int32_t Message::parse_s32() {
+    char v[4];
+    this->sstream_.read(v, 4);
+    return (v[3] << 24) + (v[2] << 16) + (v[1] << 8) + v[0];
+}
+
+uint16_t Message::parse_u16() {
+    char v[2];
+    this->sstream_.read(v, 2);
+    return (v[1] << 8) + v[0];
+}
+
+int16_t Message::parse_s16() {
+    char v[2];
+    this->sstream_.read(v, 2);
+    return (v[1] << 8) + v[0];
+}
+
 
 std::string Message::get_value() {
     return this->sstream_.str();
@@ -146,7 +175,7 @@ int AnalogSensor::getValue() {
 
     this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
-    return responseBuffer[13] * 256 + responseBuffer[12];
+    return (responseBuffer[13] << 8) + responseBuffer[12];
 }
 
 int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
@@ -266,7 +295,7 @@ LightSensor* NXT::makeLight(uint8_t port, bool active)
     } else {
         msg.add_u8(Message::PASSIVE_LIGHT);
     }
-    msg.add_u8(Mode::PCT_FULL_SCALE);
+    msg.add_u8(Mode::RAW);
 
     std::string out = msg.get_value();
     this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
@@ -313,7 +342,7 @@ double NXT::getFirmwareVersion() {
     const int min = 4, maj = 5;
 
     Message msg(false, true);
-    msg.add_u8(0x88);
+    msg.add_u8(Message::GET_FIRMWARE_VERSION);
     std::string data = msg.get_value();
 
     // Send the system command to the NXT.
@@ -418,21 +447,21 @@ int Motor::getRotationCount() {
 
     std::string out = msg.get_value();
 
-    uint8_t responseBuffer[24];
+    uint8_t responseBuffer[25];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
     this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
-    int i = responseBuffer[20];
+    int i = responseBuffer[21];
     if(i < 0)
             i = 256 + i;
-    if(responseBuffer[22] == -1)
-            responseBuffer[22] = 0;
     if(responseBuffer[23] == -1)
             responseBuffer[23] = 0;
+    if(responseBuffer[24] == -1)
+            responseBuffer[24] = 0;
 
-    int tacho = responseBuffer[23]*16777216+responseBuffer[22]*65536+responseBuffer[21]*256+i;
+    int tacho = (responseBuffer[24] << 24) + (responseBuffer[23] << 16) + (responseBuffer[22] << 8) + i;
 
     return tacho;
 }
