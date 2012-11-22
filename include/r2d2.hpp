@@ -29,7 +29,7 @@
 class Comm {
 public:
     virtual void devWrite(uint8_t *, int) = 0;
-    virtual void devRead(uint8_t *, int) = 0;
+    virtual void devRead(unsigned char *, int) = 0;
     virtual bool open() = 0;
 };
 
@@ -46,6 +46,7 @@ private:
     bool requiresResponse_;
     bool isDirect_;
     uint8_t type_;
+    uint8_t opcode_;
 
 public:
     static const int SET_INPUT_MODE = 0x05;
@@ -96,6 +97,10 @@ public:
     uint16_t parse_u16();
 
     int16_t parse_s16();
+
+    uint8_t parse_u8();
+
+    int8_t parse_s8();
 };
 
 class Sensor;
@@ -124,7 +129,7 @@ public:
     NXT(Comm *comm);
     void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
 
-    void sendDirectCommand(bool, int8_t *, size_t, uint8_t *, size_t);
+    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
 
     bool open();
 

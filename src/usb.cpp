@@ -55,7 +55,7 @@ void USBComm::devWrite(uint8_t * buf, int buf_size) {
     }
 }
 
-void USBComm::devRead(uint8_t * buf, int buf_size) {
+void USBComm::devRead(unsigned char * buf, int buf_size) {
     boost::mutex::scoped_lock lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;

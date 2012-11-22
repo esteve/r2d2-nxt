@@ -13,6 +13,8 @@ Message::Message(bool isDirect, bool requiresResponse) {
 
 Message::Message(const std::string &s) {
     this->sstream_.str(s);
+    this->type_ = this->parse_u8(); // check that it's 0x02
+    this->opcode_ = this->parse_u8(); // check that the opcode corresponds to the generator message
 }
 
 bool Message::requiresResponse() const {
@@ -29,6 +31,18 @@ void Message::add_u8(uint8_t v) {
 
 void Message::add_s8(int8_t v) {
     this->sstream_ << v;
+}
+
+uint8_t Message::parse_u8() {
+    char v[1];
+    this->sstream_.read(v, 1);
+    return v[0];
+}
+
+int8_t Message::parse_s8() {
+    char v[1];
+    this->sstream_.read(v, 1);
+    return v[0];
 }
 
 void Message::add_string(size_t n_bytes, const std::string& v) {
@@ -169,13 +183,34 @@ int AnalogSensor::getValue() {
 
     std::string out = msg.get_value();
 
-    uint8_t responseBuffer[16];
+    unsigned char responseBuffer[16];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
     this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
-    return (responseBuffer[13] << 8) + responseBuffer[12];
+    std::string s(responseBuffer, responseBuffer + 16);
+
+    Message response(s);
+
+    response.parse_u8(); // 2 check status
+
+    response.parse_u8(); // 3 port
+
+    response.parse_u8(); // 4 valid
+
+    response.parse_u8(); // 5 calibrated
+
+    response.parse_u8(); // 6 sensor_type
+    response.parse_u8(); // 7 sensor_mode
+    response.parse_u16(); // 8,9 raw_ad_value
+    response.parse_u16(); // 10,11 normalized_ad_value
+
+    int result = response.parse_s16(); // 12,13 scaled value
+
+    response.parse_s16(); // 14,15 calibrated value
+
+    return result;
 }
 
 int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
@@ -185,7 +220,7 @@ int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
 
     std::string out = msg.get_value();
 
-    uint8_t responseBuffer[4];
+    unsigned char responseBuffer[4];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
@@ -203,7 +238,7 @@ void DigitalSensor::lsRead(uint8_t *outbuf) {
 
     std::string out = msg.get_value();
 
-    uint8_t responseBuffer[20];
+    unsigned char responseBuffer[20];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
@@ -222,7 +257,7 @@ void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t o
 
     std::string tosend = msg.get_value();
 
-    uint8_t responseBuffer[3];
+    unsigned char responseBuffer[3];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
@@ -396,7 +431,7 @@ void NXT::sendSystemCommand(bool response, int8_t * dc_buf,
     this->comm_->devWrite(buf, dc_buf_size + 1);
 
     if (response) {
-        uint8_t tempreadbuf[re_buf_size];
+        unsigned char tempreadbuf[re_buf_size];
         this->comm_->devRead(tempreadbuf, re_buf_size);
 
         std::copy(tempreadbuf + 1, tempreadbuf + re_buf_size, re_buf);
@@ -404,7 +439,7 @@ void NXT::sendSystemCommand(bool response, int8_t * dc_buf,
 }
 
 void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
-                            size_t dc_buf_size, uint8_t * re_buf, size_t re_buf_size) {
+                            size_t dc_buf_size, unsigned char * re_buf, size_t re_buf_size) {
     uint8_t buf[dc_buf_size + 1];
 
     std::copy(dc_buf, dc_buf + dc_buf_size, buf + 1);
@@ -447,11 +482,49 @@ int Motor::getRotationCount() {
 
     std::string out = msg.get_value();
 
-    uint8_t responseBuffer[25];
+    unsigned char responseBuffer[25];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
     this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+
+    std::string s(responseBuffer, responseBuffer + 25);
+
+    Message response(s);
+
+/*
+    port = tgram.parse_u8() 3
+    power = tgram.parse_s8() 4
+
+    mode = tgram.parse_u8() 5
+    regulation = tgram.parse_u8() 6
+    turn_ratio = tgram.parse_s8() 7
+    run_state = tgram.parse_u8() 8
+
+    tacho_limit = tgram.parse_u32() 9,10,11,12
+    tacho_count = tgram.parse_s32() 13,14,15,16
+    block_tacho_count = tgram.parse_s32() 17,18,19,20
+    rotation_count = tgram.parse_s32() 21,22,23,24,25
+*/
+
+    response.parse_u8(); // 2 check status
+
+    response.parse_u8(); // 3 port
+
+    response.parse_s8(); // 4 power
+
+    response.parse_u8(); // 5 mode
+    response.parse_u8(); // 6 regulation
+    response.parse_s8(); // 7 turn ratio
+    response.parse_u8(); // 8 run_state
+
+    response.parse_u32(); // 9,10,11,12 tacho limit
+
+    response.parse_s32(); // 13,14,15,16 tacho count
+
+    response.parse_s32(); // 17,18,19,20 block tacho count
+
+    int tacho2 = response.parse_s32(); // 21,22,23,24 calibrated value
 
     int i = responseBuffer[21];
     if(i < 0)
@@ -462,6 +535,8 @@ int Motor::getRotationCount() {
             responseBuffer[24] = 0;
 
     int tacho = (responseBuffer[24] << 24) + (responseBuffer[23] << 16) + (responseBuffer[22] << 8) + i;
+
+//    std::cout << "TACHO: " << (tacho == tacho2) << std::endl;
 
     return tacho;
 }

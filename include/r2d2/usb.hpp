@@ -49,7 +49,7 @@ public:
 
     void devWrite(uint8_t * buf, int buf_size);
 
-    void devRead(uint8_t * buf, int buf_size);
+    void devRead(unsigned char * buf, int buf_size);
 
     USBComm(libusb_context *ctx, libusb_device *usb_dev);
 
