@@ -86,6 +86,14 @@ public:
 
     void add_s8(int8_t v);
 
+    void add_u16(uint16_t v);
+
+    void add_s16(int16_t v);
+
+    void add_u32(uint32_t v);
+
+    void add_s32(int32_t v);
+
     void add_string(size_t n_bytes, const std::string& v);
 
     std::string get_value();
@@ -151,7 +159,7 @@ public:
 
     bool isHalted() const;
 
-    void playTone(int frequency, int duration);
+    void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
 };
 

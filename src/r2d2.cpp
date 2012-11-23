@@ -33,6 +33,46 @@ void Message::add_s8(int8_t v) {
     this->sstream_ << v;
 }
 
+void Message::add_u16(uint16_t v) {
+    uint8_t v0 = v & 255;
+    uint8_t v1 = (v >> 8) & 255;
+
+    this->sstream_ << v0;
+    this->sstream_ << v1;
+}
+
+void Message::add_s16(int16_t v) {
+    int8_t v0 = v & 255;
+    int8_t v1 = (v >> 8) & 255;
+
+    this->sstream_ << v0;
+    this->sstream_ << v1;
+}
+
+void Message::add_u32(uint32_t v) {
+    uint8_t v0 = v & 255;
+    uint8_t v1 = (v >> 8) & 255;
+    uint8_t v2 = (v >> 16) & 255;
+    uint8_t v3 = (v >> 24) & 255;
+
+    this->sstream_ << v0;
+    this->sstream_ << v1;
+    this->sstream_ << v2;
+    this->sstream_ << v3;
+}
+
+void Message::add_s32(int32_t v) {
+    int8_t v0 = v & 255;
+    int8_t v1 = (v >> 8) & 255;
+    int8_t v2 = (v >> 16) & 255;
+    int8_t v3 = (v >> 24) & 255;
+
+    this->sstream_ << v0;
+    this->sstream_ << v1;
+    this->sstream_ << v2;
+    this->sstream_ << v3;
+}
+
 uint8_t Message::parse_u8() {
     char v[1];
     this->sstream_.read(v, 1);
@@ -453,17 +493,16 @@ void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
     }
 }
 
-void NXT::playTone(int frequency, int duration) {
+void NXT::playTone(uint16_t frequency, uint16_t duration) {
     Message msg(true, false);
     msg.add_u8(Message::PLAY_TONE);
-    msg.add_u8(frequency % 256);
-    msg.add_u8((frequency-(frequency%256))/256);
-    msg.add_u8(duration % 256);
-    msg.add_u8((duration-(duration%256))/256);
+
+    msg.add_u16(frequency);
+    msg.add_u16(duration);
 
     std::string out = msg.get_value();
 
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
 void NXT::stopSound() {
@@ -472,7 +511,7 @@ void NXT::stopSound() {
 
     std::string out = msg.get_value();
 
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
 int Motor::getRotationCount() {
