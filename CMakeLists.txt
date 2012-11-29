@@ -24,7 +24,7 @@ endif()
 
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11)
 if (HAS_STD_CPP11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_NO_CXX11_NUMERIC_LIMITS -stdlib=libc++ -std=c++11")
 endif()
 
 # Set library path to ports path on Mac OSX
