@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 2.8)
 project (R2D2-NXT)
 
+list(APPEND CMAKE_FIND_ROOT_PATH
+ ${CMAKE_SOURCE_DIR}/cmake/modules)
+
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
@@ -21,7 +24,7 @@ endif()
 
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11)
 if (HAS_STD_CPP11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_NO_CXX11_NUMERIC_LIMITS -stdlib=libc++ -std=c++11")
 endif()
 
 # Set library path to ports path on Mac OSX
@@ -29,11 +32,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /opt/local/lib)
     set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} /opt/local/include)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    find_library(LIBBLUETOOTH bluetooth)
-    set(R2D2LIBS ${R2D2LIBS} ${LIBBLUETOOTH})
-endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     find_package(Boost COMPONENTS thread system REQUIRED)
@@ -44,8 +42,15 @@ endif()
 include_directories(${Boost_INCLUDE_DIRS})
 set(R2D2LIBS ${R2D2LIBS} ${Boost_LIBRARIES})
 
-find_library(LIBUSB usb-1.0)
-set(R2D2LIBS ${R2D2LIBS} ${LIBUSB})
+find_package(LIBUSB REQUIRED)
+include_directories(${LIBUSB_INCLUDE_DIRS})
+set(R2D2LIBS ${R2D2LIBS} ${LIBUSB_LIBRARIES})
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    find_package(BLUETOOTH REQUIRED)
+    include_directories(${LIBBLUETOOTH_INCLUDE_DIRS})
+    set(R2D2LIBS ${R2D2LIBS} ${LIBBLUETOOTH_LIBRARIES})
+endif()
 
 include_directories(include)
 add_subdirectory(src)
