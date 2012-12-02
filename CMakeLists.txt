@@ -40,10 +40,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
     # Use Clang's libc++ on Mac OSX
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    # Work around Boost bug #7671 (https://svn.boost.org/trac/boost/ticket/7671)
-    if(${Boost_VERSION} STREQUAL "105200")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_NO_CXX11_NUMERIC_LIMITS")
-    endif()
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # Mac OSX requires boost.system
@@ -51,6 +47,13 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     find_package(Boost COMPONENTS thread system REQUIRED)
 else()
     find_package(Boost COMPONENTS thread REQUIRED)
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    # Work around Boost bug #7671 (https://svn.boost.org/trac/boost/ticket/7671)
+    if(${Boost_VERSION} STREQUAL "105200")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_NO_CXX11_NUMERIC_LIMITS")
+    endif()
 endif()
 
 # Require Boost
