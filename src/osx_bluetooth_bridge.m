@@ -40,11 +40,10 @@ void *argument;
 -(void) deviceInquiryDeviceFound: (IOBluetoothDeviceInquiry*) sender
                             device: (IOBluetoothDevice*) device
 {
-    NSString *addrStr = [device getAddressString];
-    BluetoothDeviceAddress *addr = [device getAddress];
+    const BluetoothDeviceAddress *addr = [device getAddress];
     if (addr->data[5] == 0x00 && addr->data[4] == 0x16 && addr->data[3] == 0x53) {
         // Lego NXT found
-        func(addr, self->argument);
+        func((void *)addr, self->argument);
     }
 }
 
@@ -100,9 +99,9 @@ BOOL response;
 @interface ConnectionHandler : NSObject {
 IOBluetoothRFCOMMChannel *channel;
 }
-- (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)channel 
+- (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)chan 
                            status:(IOReturn)status;
-- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)channel 
+- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)chan 
                      data:(void *)dataPointer 
                    length:(size_t)dataLength;
 @property (nonatomic, assign) IOBluetoothRFCOMMChannel *channel;
@@ -110,7 +109,7 @@ IOBluetoothRFCOMMChannel *channel;
 
 
 @implementation ConnectionHandler
-- (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)channel 
+- (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)chan 
                            status:(IOReturn)status
 {
     if( kIOReturnSuccess == status ) {
@@ -118,7 +117,7 @@ IOBluetoothRFCOMMChannel *channel;
     }
     CFRunLoopStop( CFRunLoopGetCurrent() );
 }
-- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)channel 
+- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)chan 
                      data:(void *)dataPointer 
                    length:(size_t)dataLength
 {
@@ -154,7 +153,7 @@ void *r2d2_bt_open_channel(void *addr) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     IOBluetoothDevice *remote_device = 
-        [IOBluetoothDevice withAddress:btaddr];
+        [IOBluetoothDevice deviceWithAddress:btaddr];
     IOBluetoothRFCOMMChannel *chan;
     ConnectionHandler *handler = [[ConnectionHandler alloc] init];
 
@@ -182,7 +181,7 @@ void r2d2_bt_write(void *chan, char *data, size_t length, void *responseBuffer) 
 
     [channel setDelegate: handler];
 
-    [channel writeAsync: data length: length];
+    [channel writeAsync: data length: length refcon: NULL];
 
     CFRunLoopRun();
 
@@ -207,7 +206,7 @@ void r2d2_bt_read(void *chan, char *data, size_t length, void *responseBuffer) {
 
     [channel setDelegate: handler];
 
-    [channel writeAsync: data length: length];
+    [channel writeAsync: data length: length refcon: NULL];
 
     CFRunLoopRun();
 
