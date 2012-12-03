@@ -6,10 +6,10 @@
 
 
 @interface Discoverer: NSObject {
-void (*func)(void *, void *);
+void (*func)(const BluetoothDeviceAddress *, void *);
 void *argument;
 }
--(Discoverer*) initWithCallback: (void (*)(void *, void*)) f context: (void *) ctx;
+-(Discoverer*) initWithCallback: (void (*)(const BluetoothDeviceAddress *, void*)) f context: (void *) ctx;
 
 -(void) deviceInquiryComplete: (IOBluetoothDeviceInquiry*) sender 
                             error: (IOReturn) error
@@ -20,7 +20,7 @@ void *argument;
 
 
 @implementation Discoverer
--(Discoverer*) initWithCallback: (void (*)(void *, void*)) f context: (void *) ctx {
+-(Discoverer*) initWithCallback: (void (*)(const BluetoothDeviceAddress *, void*)) f context: (void *) ctx {
     self = [super init];
 
     if (self) {
@@ -41,9 +41,10 @@ void *argument;
                             device: (IOBluetoothDevice*) device
 {
     const BluetoothDeviceAddress *addr = [device getAddress];
-    if (addr->data[5] == 0x00 && addr->data[4] == 0x16 && addr->data[3] == 0x53) {
+
+    if (addr->data[0] == 0x00 && addr->data[1] == 0x16 && addr->data[2] == 0x53) {
         // Lego NXT found
-        func((void *)addr, self->argument);
+        func(addr, self->argument);
     }
 }
 
@@ -129,7 +130,7 @@ IOBluetoothRFCOMMChannel *channel;
 @end
 
 
-void r2d2_bt_scan(void (*f)(void *, void *), void *arg) {
+void r2d2_bt_scan(void (*f)(const BluetoothDeviceAddress *, void *), void *arg) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     Discoverer *d = [[Discoverer alloc] initWithCallback: f context: arg];
@@ -147,13 +148,11 @@ void r2d2_bt_scan(void (*f)(void *, void *), void *arg) {
     [pool release];
 }
 
-void *r2d2_bt_open_channel(void *addr) {
-    BluetoothDeviceAddress *btaddr = addr;
-
+void *r2d2_bt_open_channel(const BluetoothDeviceAddress *addr) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     IOBluetoothDevice *remote_device = 
-        [IOBluetoothDevice deviceWithAddress:btaddr];
+        [IOBluetoothDevice deviceWithAddress:addr];
     IOBluetoothRFCOMMChannel *chan;
     ConnectionHandler *handler = [[ConnectionHandler alloc] init];
 
