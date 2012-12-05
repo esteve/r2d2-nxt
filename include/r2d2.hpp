@@ -26,18 +26,66 @@
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
+enum class Mode : uint8_t {
+    RAW = 0x00,
+    BOOLEAN = 0x20,
+    PCT_FULL_SCALE = 0x80
+};
+
+enum class Opcode : uint8_t {
+    SET_INPUT_MODE = 0x05,
+    LOWSPEED_9V = 0x0B,
+
+
+    LS_GET_STATUS = 0x0E,
+    LS_WRITE = 0x0F,
+    LS_READ = 0x10,
+
+    GET_VALUE = 0x07,
+
+    TOUCH = 0x01,
+
+    START_MOTOR = 0x04,
+    STOP_MOTOR = 0x04,
+    RESET_ROTATION_COUNT = 0x0A,
+    GET_ROTATION_COUNT = 0x06,
+
+    PLAY_TONE = 0x03,
+    STOP_SOUND = 0x0C,
+
+    ACTIVE_LIGHT = 0x05,
+    PASSIVE_LIGHT = 0x06,
+
+    GET_FIRMWARE_VERSION = 0x88
+};
+
+enum class SensorPort : uint8_t {
+    OUT_A = 0,
+    OUT_B = 1,
+    OUT_C = 2
+};
+
+enum class MotorPort : uint8_t {
+    IN_1 = 0,
+    IN_2 = 1,
+    IN_3 = 2,
+    IN_4 = 3
+};
+
 class Comm {
+private:
+    Transport *transport_;
+public:
+    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
+
+    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
+};
+
+class Transport {
 public:
     virtual void devWrite(uint8_t *, int) = 0;
     virtual void devRead(unsigned char *, int) = 0;
     virtual bool open() = 0;
-};
-
-class Mode {
-public:
-    static const int RAW = 0x00;
-    static const int BOOLEAN = 0x20;
-    static const int PCT_FULL_SCALE = 0x80;
 };
 
 class Message {
@@ -49,31 +97,6 @@ private:
     uint8_t opcode_;
 
 public:
-    static const int SET_INPUT_MODE = 0x05;
-    static const int LOWSPEED_9V = 0x0B;
-
-
-    static const int LS_GET_STATUS = 0x0E;
-    static const int LS_WRITE = 0x0F;
-    static const int LS_READ = 0x10;
-
-    static const int GET_VALUE = 0x07;
-
-    static const int TOUCH = 0x01;
-
-    static const int START_MOTOR = 0x04;
-    static const int STOP_MOTOR = 0x04;
-    static const int RESET_ROTATION_COUNT = 0x0A;
-    static const int GET_ROTATION_COUNT = 0x06;
-
-    static const int PLAY_TONE = 0x03;
-    static const int STOP_SOUND = 0x0C;
-
-    static const int ACTIVE_LIGHT = 0x05;
-    static const int PASSIVE_LIGHT = 0x06;
-
-    static const int GET_FIRMWARE_VERSION = 0x88;
-
     Message(bool isDirect, bool requiresResponse);
 
     Message(const std::string &s);
@@ -125,19 +148,7 @@ private:
     bool halted;
 
 public:
-    static const int OUT_A = 0;
-    static const int OUT_B = 1;
-    static const int OUT_C = 2;
-
-    static const int IN_1 = 0;
-    static const int IN_2 = 1;
-    static const int IN_3 = 2;
-    static const int IN_4 = 3;
-
     NXT(Comm *comm);
-    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
-
-    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
 
     bool open();
 
@@ -161,6 +172,52 @@ public:
 
     void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
+
+    ConfiguredNXT* configure(SensorFactory::LIGHT_SENSOR, SensorFactory::NULL_SENSOR,
+        SensorFactory::TOUCH_SENSOR, SensorFactory::SONAR_SENSOR,
+        MotorFactory::MOTOR, MotorFactory::MOTOR, MotorFactory::MOTOR);
+};
+
+class ConfiguredNXT {
+private:
+    NXT nxt_;
+    bool halted;
+    Sensor *sensorPorts[4];
+    Motor *motorPorts[3];
+
+public:
+    Sensor * sensorPort(const int port) {
+        return this->sensorPort[port];
+    }
+
+    Motor *motorPort(const int port) {
+        return this->motorPort[port];
+    }
+
+    std::string getName();
+
+    double getFirmwareVersion();
+
+    void getDeviceInfo(uint8_t*, size_t);
+
+    TouchSensor *makeTouch(uint8_t);
+
+    SonarSensor *makeSonar(uint8_t);
+
+    LightSensor *makeLight(uint8_t, bool);
+
+    Motor *makeMotor(uint8_t);
+
+    void halt();
+
+    bool isHalted() const;
+
+    void playTone(uint16_t frequency, uint16_t duration);
+    void stopSound();
+
+    ConfiguredNXT* configure(SensorFactory::LIGHT_SENSOR, SensorFactory::NULL_SENSOR,
+        SensorFactory::TOUCH_SENSOR, SensorFactory::SONAR_SENSOR,
+        MotorFactory::MOTOR, MotorFactory::MOTOR, MotorFactory::MOTOR);
 };
 
 class Motor {

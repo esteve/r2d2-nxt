@@ -140,7 +140,7 @@ void Motor::setForward(uint8_t power) {
 
     std::string out = msg.get_value();
 
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
 void Motor::setReverse(uint8_t power) {
@@ -160,7 +160,7 @@ void Motor::setReverse(uint8_t power) {
 
     std::string out = msg.get_value();
 
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
 void Motor::stop(bool brake) {
@@ -188,7 +188,7 @@ void Motor::stop(bool brake) {
 
     std::string out = msg.get_value();
 
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
 void Motor::resetRotationCount(bool relative) {
@@ -199,7 +199,7 @@ void Motor::resetRotationCount(bool relative) {
 
     std::string out = msg.get_value();
 
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
 
@@ -227,7 +227,7 @@ int AnalogSensor::getValue() {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     std::string s(responseBuffer, responseBuffer + 16);
 
@@ -264,7 +264,7 @@ int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
 
@@ -282,7 +282,7 @@ void DigitalSensor::lsRead(uint8_t *outbuf) {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
 }
@@ -301,7 +301,7 @@ void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t o
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getNXT()->sendDirectCommand(true, (int8_t *)(tosend.c_str()), tosend.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendDirectCommand(true, (int8_t *)(tosend.c_str()), tosend.size(), responseBuffer, sizeof(responseBuffer));
 
     std::memcpy(outBuf, responseBuffer, outSize * sizeof(uint8_t));
 }
@@ -355,7 +355,7 @@ TouchSensor* NXT::makeTouch(uint8_t port) {
     msg.add_u8(Mode::BOOLEAN);
 
     std::string out = msg.get_value();
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
     return new TouchSensor(this, port);
 }
 
@@ -373,7 +373,7 @@ LightSensor* NXT::makeLight(uint8_t port, bool active)
     msg.add_u8(Mode::RAW);
 
     std::string out = msg.get_value();
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
     return new LightSensor(this, port);
 }
 
@@ -389,7 +389,7 @@ SonarSensor* NXT::makeSonar(uint8_t port) {
     msg.add_u8(Mode::RAW);
 
     std::string out = msg.get_value();
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
     return new SonarSensor(this, port);
 }
 
@@ -421,7 +421,7 @@ double NXT::getFirmwareVersion() {
     std::string data = msg.get_value();
 
     // Send the system command to the NXT.
-    this->sendSystemCommand(true, (int8_t *)data.c_str(), data.size(), outBuf, sizeof(outBuf));
+    this->comm_->sendSystemCommand(true, (int8_t *)data.c_str(), data.size(), outBuf, sizeof(outBuf));
 
     double version = outBuf[min];
 
@@ -437,7 +437,7 @@ void NXT::getDeviceInfo(uint8_t * outBuf, size_t size) {
     int8_t inBuf[] = { static_cast<int8_t>(0x9B) };
 
     // Send the system command to the NXT.
-    this->sendSystemCommand(true, inBuf, sizeof(inBuf), outBuf, size);
+    this->comm_->sendSystemCommand(true, inBuf, sizeof(inBuf), outBuf, size);
 }
 
 std::string NXT::getName() {
@@ -502,7 +502,7 @@ void NXT::playTone(uint16_t frequency, uint16_t duration) {
 
     std::string out = msg.get_value();
 
-    this->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
 void NXT::stopSound() {
@@ -511,7 +511,7 @@ void NXT::stopSound() {
 
     std::string out = msg.get_value();
 
-    this->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
 int Motor::getRotationCount() {
@@ -525,7 +525,7 @@ int Motor::getRotationCount() {
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->comm_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 
     std::string s(responseBuffer, responseBuffer + 25);
 

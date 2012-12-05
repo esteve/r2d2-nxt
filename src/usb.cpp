@@ -5,7 +5,7 @@
 #include <iostream>
 #include <iomanip>
 
-bool USBComm::open() {
+bool USBTransport::open() {
 
     int nEp = 0;
 
@@ -40,7 +40,7 @@ bool USBComm::open() {
     return true;
 }
 
-void USBComm::devWrite(uint8_t * buf, int buf_size) {
+void USBTransport::devWrite(uint8_t * buf, int buf_size) {
     boost::mutex::scoped_lock lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
@@ -55,7 +55,7 @@ void USBComm::devWrite(uint8_t * buf, int buf_size) {
     }
 }
 
-void USBComm::devRead(unsigned char * buf, int buf_size) {
+void USBTransport::devRead(unsigned char * buf, int buf_size) {
     boost::mutex::scoped_lock lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
@@ -70,12 +70,12 @@ void USBComm::devRead(unsigned char * buf, int buf_size) {
     }
 }
 
-USBComm::USBComm(libusb_context *ctx, libusb_device *usb_dev) {
+USBTransport::USBTransport(libusb_context *ctx, libusb_device *usb_dev) {
     this->ctx_ = ctx;
     this->usb_dev_ = usb_dev;
 }
 
-USBComm::~USBComm() {
+USBTransport::~USBTransport() {
     libusb_unref_device(this->usb_dev_);
     libusb_close(this->pUSBHandle_);
 }
@@ -144,8 +144,8 @@ std::vector<NXT *>* USBNXTManager::list() {
 
         if (desc.idVendor == NXT_VENDOR_ID && desc.idProduct == NXT_PRODUCT_ID) {
             dev = libusb_ref_device(devs[i]);
-            USBComm *comm = new USBComm(ctx, dev);
-            NXT *nxt = new NXT(comm);
+            USBTransport *transport = new USBTransport(ctx, dev);
+            NXT *nxt = new NXT(new Comm(transport));
             v->push_back(nxt);
         }
     }

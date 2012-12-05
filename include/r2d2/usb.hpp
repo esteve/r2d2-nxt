@@ -31,7 +31,7 @@
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
-class USBComm : public Comm {
+class USBTransport : public Transport {
 private:
     libusb_device *usb_dev_;
     libusb_device_handle *pUSBHandle_;
