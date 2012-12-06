@@ -99,7 +99,7 @@ std::vector<NXT *>* USBNXTManager::list() {
         return v;
     }
 
-    libusb_set_debug(ctx, 3); //set verbosity level to 3, as suggested in the documentation
+    libusb_set_debug(ctx, 1); //set verbosity level to 1
 
     cnt = libusb_get_device_list(ctx, &devs); //get the list of devices
     if (cnt < 0) {
