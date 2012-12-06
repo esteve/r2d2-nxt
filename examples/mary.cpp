@@ -30,7 +30,6 @@ int main()
 
     USBNXTManager usbm;
     NXT* nxt = usbm.list()->at(0);
-    int turnCount = 0;
     if (nxt->open()) { //initialize the NXT and continue if it succeds
         std::cout << nxt->getName() << std::endl;
 
