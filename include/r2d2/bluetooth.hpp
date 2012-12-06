@@ -29,8 +29,8 @@ private:
     void *addr_; // this is actually a pointer to a struct sockaddr_rc
     int sock_;
 public:
-    BTComm(void *addr);
-    ~BTComm();
+    BTTransport(void *addr);
+    ~BTTransport();
 
     bool open();
 

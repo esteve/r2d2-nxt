@@ -1,6 +1,8 @@
 #include <r2d2.hpp>
 #include <r2d2/motors.hpp>
 
+#include <cstring>
+
 StandardMotor::StandardMotor(Comm *comm, MotorPort port) {
     this->comm_ = comm;
     this->port_ = port;
@@ -108,7 +110,7 @@ int StandardMotor::getRotationCount() {
 
     unsigned char responseBuffer[25];
 
-    memset(responseBuffer, 1, sizeof(responseBuffer));
+    std::memset(responseBuffer, 1, sizeof(responseBuffer));
 
     this->comm_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
 

@@ -1,6 +1,8 @@
 #include <r2d2.hpp>
 #include <r2d2/sensors.hpp>
 
+#include <cstring>
+
 Sensor::Sensor(Comm *comm, SensorPort port) {
     this->comm_ = comm;
     this->port_ = port;
