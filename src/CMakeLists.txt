@@ -1,4 +1,4 @@
-set(R2D2SRC ${R2D2SRC} r2d2.cpp usb.cpp)
+set(R2D2SRC ${R2D2SRC} r2d2.cpp usb.cpp motors.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     find_library(LIBBLUETOOTH bluetooth)
