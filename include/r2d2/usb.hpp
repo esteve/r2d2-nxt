@@ -51,9 +51,9 @@ public:
 
     void devRead(unsigned char * buf, int buf_size);
 
-    USBComm(libusb_context *ctx, libusb_device *usb_dev);
+    USBTransport(libusb_context *ctx, libusb_device *usb_dev);
 
-    ~USBComm();
+    ~USBTransport();
 };
 
 class USBNXTManager : public NXTManager {

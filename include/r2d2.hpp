@@ -59,26 +59,17 @@ enum class Opcode : uint8_t {
     GET_FIRMWARE_VERSION = 0x88
 };
 
-enum class SensorPort : uint8_t {
+enum class MotorPort : uint8_t {
     OUT_A = 0,
     OUT_B = 1,
     OUT_C = 2
 };
 
-enum class MotorPort : uint8_t {
+enum class SensorPort : uint8_t {
     IN_1 = 0,
     IN_2 = 1,
     IN_3 = 2,
     IN_4 = 3
-};
-
-class Comm {
-private:
-    Transport *transport_;
-public:
-    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
-
-    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
 };
 
 class Transport {
@@ -86,6 +77,19 @@ public:
     virtual void devWrite(uint8_t *, int) = 0;
     virtual void devRead(unsigned char *, int) = 0;
     virtual bool open() = 0;
+};
+
+class Comm {
+private:
+    Transport *transport_;
+public:
+    Comm(Transport *transport) : transport_(transport) {}
+
+    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
+
+    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
+
+    bool open();
 };
 
 class Message {
@@ -134,18 +138,57 @@ public:
     int8_t parse_s8();
 };
 
+enum class SensorType {
+    ACTIVE_LIGHT_SENSOR,
+    PASSIVE_LIGHT_SENSOR,
+    TOUCH_SENSOR,
+    SONAR_SENSOR,
+    NULL_SENSOR
+};
+
+enum class MotorType {
+     STANDARD_MOTOR,
+     NULL_MOTOR
+};
+
 class Sensor;
 
 class SonarSensor;
 class TouchSensor;
-class LightSensor;
+class ActiveLightSensor;
+class PassiveLightSensor;
 
-class Motor;
+class Motor {
+public:
+    virtual void setForward(uint8_t power) = 0;
+
+    virtual void setReverse(uint8_t power) = 0;
+
+    virtual void stop(bool brake) = 0;
+
+    virtual void resetRotationCount(bool relative) = 0;
+
+    virtual int getRotationCount() = 0;
+};
+
+class ConfiguredNXT;
+
+class SensorFactory {
+public:
+    Sensor *makeSensor(SensorType, SensorPort, Comm *);
+};
+
+class MotorFactory {
+public:
+    Motor *makeMotor(MotorType, MotorPort, Comm *);
+};
 
 class NXT {
 private:
     Comm *comm_;
     bool halted;
+    SensorFactory sensorFactory;
+    MotorFactory motorFactory;
 
 public:
     NXT(Comm *comm);
@@ -158,14 +201,6 @@ public:
 
     void getDeviceInfo(uint8_t*, size_t);
 
-    TouchSensor *makeTouch(uint8_t);
-
-    SonarSensor *makeSonar(uint8_t);
-
-    LightSensor *makeLight(uint8_t, bool);
-
-    Motor *makeMotor(uint8_t);
-
     void halt();
 
     bool isHalted() const;
@@ -173,26 +208,30 @@ public:
     void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
 
-    ConfiguredNXT* configure(SensorFactory::LIGHT_SENSOR, SensorFactory::NULL_SENSOR,
-        SensorFactory::TOUCH_SENSOR, SensorFactory::SONAR_SENSOR,
-        MotorFactory::MOTOR, MotorFactory::MOTOR, MotorFactory::MOTOR);
+    ConfiguredNXT* configure(SensorType sensor1, SensorType sensor2,
+        SensorType sensor3, SensorType sensor4,
+        MotorType motorA, MotorType motorB, MotorType motorC);
 };
 
 class ConfiguredNXT {
 private:
-    NXT nxt_;
+    NXT *nxt_;
+    Comm *comm_;
     bool halted;
-    Sensor *sensorPorts[4];
-    Motor *motorPorts[3];
+    std::vector<Sensor *> sensorPorts;
+    std::vector<Motor *> motorPorts;
 
 public:
-    Sensor * sensorPort(const int port) {
-        return this->sensorPort[port];
-    }
 
-    Motor *motorPort(const int port) {
-        return this->motorPort[port];
-    }
+    ConfiguredNXT(NXT *, Comm *, Sensor *, Sensor *, Sensor *, Sensor *, Motor *, Motor *, Motor *);
+
+    Sensor * sensorPort(SensorPort port) {
+        return this->sensorPorts.at(uint8_t(port));
+    };
+
+    Motor *motorPort(MotorPort port) {
+        return this->motorPorts.at(uint8_t(port));
+    };
 
     std::string getName();
 
@@ -200,33 +239,33 @@ public:
 
     void getDeviceInfo(uint8_t*, size_t);
 
-    TouchSensor *makeTouch(uint8_t);
-
-    SonarSensor *makeSonar(uint8_t);
-
-    LightSensor *makeLight(uint8_t, bool);
-
-    Motor *makeMotor(uint8_t);
-
     void halt();
 
     bool isHalted() const;
 
     void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
-
-    ConfiguredNXT* configure(SensorFactory::LIGHT_SENSOR, SensorFactory::NULL_SENSOR,
-        SensorFactory::TOUCH_SENSOR, SensorFactory::SONAR_SENSOR,
-        MotorFactory::MOTOR, MotorFactory::MOTOR, MotorFactory::MOTOR);
 };
 
-class Motor {
+class NullMotor : public Motor {
+    void setForward(uint8_t power) { }
+
+    void setReverse(uint8_t power) { }
+
+    void stop(bool brake) { }
+
+    void resetRotationCount(bool relative) { }
+
+    int getRotationCount() { return 0; }
+};
+
+class StandardMotor : public Motor {
 private:
-    NXT *nxt_;
-    uint8_t port_;
+    Comm *comm_;
+    MotorPort port_;
 
 public:
-    Motor(NXT *nxt, uint8_t port);
+    StandardMotor(Comm *comm, MotorPort port);
 
     void setForward(uint8_t power);
 
@@ -241,38 +280,57 @@ public:
 
 class Sensor {
 private:
-    NXT *nxt_;
-    uint8_t port_;
+    Comm *comm_;
+    SensorPort port_;
+    SensorType type_;
+    Mode mode_;
 
 protected:
-    NXT* getNXT();
-    uint8_t getPort();
+    Comm* getComm();
+    SensorPort getPort();
 
 public:
-    Sensor(NXT *nxt, uint8_t port);
+    Sensor(Comm *comm, SensorPort port);
 
     virtual int getValue() = 0;
 };
 
+class NullSensor : public Sensor {
+public:
+    NullSensor(SensorPort port) : Sensor(nullptr, port) { };
+    int getValue() { return 0; };
+};
+
 class AnalogSensor : public Sensor {
 public:
-    AnalogSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+    AnalogSensor(Comm *comm, SensorPort port) : Sensor(comm, port) { };
     int getValue();
 };
 
 class TouchSensor : public AnalogSensor {
 public:
-    TouchSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
+    TouchSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port) { };
+    static const SensorType type_ = SensorType::TOUCH_SENSOR;
+    static const Mode mode_ = Mode::BOOLEAN;
 };
 
-class LightSensor : public AnalogSensor {
+class ActiveLightSensor : public AnalogSensor {
 public:
-    LightSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
+    ActiveLightSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port) { };
+    static const SensorType type_ = SensorType::ACTIVE_LIGHT_SENSOR;
+    static const Mode mode_ = Mode::RAW;
+};
+
+class PassiveLightSensor : public AnalogSensor {
+public:
+    PassiveLightSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port) { };
+    static const SensorType type_ = SensorType::PASSIVE_LIGHT_SENSOR;
+    static const Mode mode_ = Mode::RAW;
 };
 
 class DigitalSensor : public Sensor {
 public:
-    DigitalSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+    DigitalSensor(Comm *comm, SensorPort port) : Sensor(comm, port) { };
 protected:
     int lsGetStatus(uint8_t *);
     void lsRead(uint8_t *);
@@ -281,8 +339,10 @@ protected:
 
 class SonarSensor : public DigitalSensor {
 public:
-    SonarSensor(NXT *nxt, uint8_t port) : DigitalSensor(nxt, port) { };
+    SonarSensor(Comm *comm, SensorPort port) : DigitalSensor(comm, port) { };
     int getValue();
+    static const SensorType type_ = SensorType::SONAR_SENSOR;
+    static const Mode mode_ = Mode::RAW;
 };
 
 class NXTManager {

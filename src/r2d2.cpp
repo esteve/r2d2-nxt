@@ -118,15 +118,15 @@ std::string Message::get_value() {
     return this->sstream_.str();
 }
 
-Motor::Motor(NXT *nxt, uint8_t port) {
-    this->nxt_ = nxt;
+StandardMotor::StandardMotor(Comm *comm, MotorPort port) {
+    this->comm_ = comm;
     this->port_ = port;
 }
 
-void Motor::setForward(uint8_t power) {
+void StandardMotor::setForward(uint8_t power) {
     Message msg(true, false);
-    msg.add_u8(Message::START_MOTOR);
-    msg.add_u8(this->port_);
+    msg.add_u8(uint8_t(Opcode::START_MOTOR));
+    msg.add_u8(uint8_t(this->port_));
     msg.add_s8(power);
 
     msg.add_u8(0x01 | 0x04); // UNKNOWN
@@ -143,10 +143,10 @@ void Motor::setForward(uint8_t power) {
     this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
-void Motor::setReverse(uint8_t power) {
+void StandardMotor::setReverse(uint8_t power) {
     Message msg(true, false);
-    msg.add_u8(Message::START_MOTOR);
-    msg.add_u8(this->port_);
+    msg.add_u8(uint8_t(Opcode::START_MOTOR));
+    msg.add_u8(uint8_t(this->port_));
     msg.add_s8(-power);
 
     msg.add_u8(0x01 | 0x04); // UNKNOWN
@@ -163,10 +163,10 @@ void Motor::setReverse(uint8_t power) {
     this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
-void Motor::stop(bool brake) {
+void StandardMotor::stop(bool brake) {
     Message msg(true, false);
-    msg.add_u8(Message::STOP_MOTOR);
-    msg.add_u8(this->port_);
+    msg.add_u8(uint8_t(Opcode::STOP_MOTOR));
+    msg.add_u8(uint8_t(this->port_));
     msg.add_s8(0); // power 0?
 
     if (brake) {
@@ -191,10 +191,10 @@ void Motor::stop(bool brake) {
     this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
-void Motor::resetRotationCount(bool relative) {
+void StandardMotor::resetRotationCount(bool relative) {
     Message msg(true, false);
-    msg.add_u8(Message::RESET_ROTATION_COUNT);
-    msg.add_u8(this->port_);
+    msg.add_u8(uint8_t(Opcode::RESET_ROTATION_COUNT));
+    msg.add_u8(uint8_t(this->port_));
     msg.add_u8(relative);
 
     std::string out = msg.get_value();
@@ -203,23 +203,32 @@ void Motor::resetRotationCount(bool relative) {
 }
 
 
-Sensor::Sensor(NXT *nxt, uint8_t port) {
-    this->nxt_ = nxt;
+Sensor::Sensor(Comm *comm, SensorPort port) {
+    this->comm_ = comm;
     this->port_ = port;
+
+    Message msg(true, false);
+    msg.add_u8(uint8_t(Opcode::SET_INPUT_MODE));
+    msg.add_u8(uint8_t(port));
+    msg.add_u8(uint8_t(this->type_));
+    msg.add_u8(uint8_t(this->mode_));
+
+    std::string out = msg.get_value();
+    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
 }
 
-NXT* Sensor::getNXT() {
-    return this->nxt_;
+Comm* Sensor::getComm() {
+    return this->comm_;
 }
 
-uint8_t Sensor::getPort() {
+SensorPort Sensor::getPort() {
     return this->port_;
 }
 
 int AnalogSensor::getValue() {
     Message msg(true, true);
-    msg.add_u8(Message::GET_VALUE);
-    msg.add_u8(this->getPort());
+    msg.add_u8(uint8_t(Opcode::GET_VALUE));
+    msg.add_u8(uint8_t(this->getPort()));
 
     std::string out = msg.get_value();
 
@@ -255,8 +264,8 @@ int AnalogSensor::getValue() {
 
 int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
     Message msg(true, true);
-    msg.add_u8(Message::LS_GET_STATUS);
-    msg.add_u8(this->getPort());
+    msg.add_u8(uint8_t(Opcode::LS_GET_STATUS));
+    msg.add_u8(uint8_t(this->getPort()));
 
     std::string out = msg.get_value();
 
@@ -273,8 +282,8 @@ int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
 
 void DigitalSensor::lsRead(uint8_t *outbuf) {
     Message msg(true, true);
-    msg.add_u8(Message::LS_READ);
-    msg.add_u8(this->getPort());
+    msg.add_u8(uint8_t(Opcode::LS_READ));
+    msg.add_u8(uint8_t(this->getPort()));
 
     std::string out = msg.get_value();
 
@@ -289,8 +298,8 @@ void DigitalSensor::lsRead(uint8_t *outbuf) {
 
 void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t outSize) {
     Message msg(true, true);
-    msg.add_u8(Message::LS_WRITE);
-    msg.add_u8(this->getPort());
+    msg.add_u8(uint8_t(Opcode::LS_WRITE));
+    msg.add_u8(uint8_t(this->getPort()));
     msg.add_u8(indata.size());
     msg.add_u8(outSize);
     msg.add_string(indata.size(), indata);
@@ -347,34 +356,35 @@ int SonarSensor::getValue() {
     }
 }
 
+/*
 TouchSensor* NXT::makeTouch(uint8_t port) {
     Message msg(true, false);
-    msg.add_u8(Message::SET_INPUT_MODE);
+    msg.add_u8(uint8_t(Opcode::SET_INPUT_MODE));
     msg.add_u8(port);
-    msg.add_u8(Message::TOUCH);
-    msg.add_u8(Mode::BOOLEAN);
+    msg.add_u8(uint8_t(Opcode::TOUCH));
+    msg.add_u8(uint8_t(Mode::BOOLEAN));
 
     std::string out = msg.get_value();
     this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new TouchSensor(this, port);
+    return new TouchSensor(this->comm_, port);
 }
 
 LightSensor* NXT::makeLight(uint8_t port, bool active)
 {
     Message msg(true, false);
-    msg.add_u8(Message::SET_INPUT_MODE);
+    msg.add_u8(uint8_t(Opcode::SET_INPUT_MODE));
     msg.add_u8(port);
 
     if(active) {
-        msg.add_u8(Message::ACTIVE_LIGHT);
+        msg.add_u8(uint8_t(Opcode::ACTIVE_LIGHT));
     } else {
-        msg.add_u8(Message::PASSIVE_LIGHT);
+        msg.add_u8(uint8_t(Opcode::PASSIVE_LIGHT));
     }
-    msg.add_u8(Mode::RAW);
+    msg.add_u8(uint8_t(Mode::RAW));
 
     std::string out = msg.get_value();
     this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new LightSensor(this, port);
+    return new LightSensor(this->comm_, port);
 }
 
 
@@ -383,19 +393,17 @@ SonarSensor* NXT::makeSonar(uint8_t port) {
     // 0x0B -> LOWSPEED_9V
     // 0x00 -> RAW
     Message msg(true, false);
-    msg.add_u8(Message::SET_INPUT_MODE);
+    msg.add_u8(uint8_t(Opcode::SET_INPUT_MODE));
     msg.add_u8(port);
-    msg.add_u8(Message::LOWSPEED_9V);
-    msg.add_u8(Mode::RAW);
+    msg.add_u8(uint8_t(Opcode::LOWSPEED_9V));
+    msg.add_u8(uint8_t(Mode::RAW));
 
     std::string out = msg.get_value();
     this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new SonarSensor(this, port);
+    return new SonarSensor(this->comm_, port);
 }
+*/
 
-Motor* NXT::makeMotor(uint8_t port) {
-    return new Motor(this, port);
-}
 
 bool NXT::open() {
     return this->comm_->open();
@@ -406,9 +414,12 @@ bool NXT::isHalted() const {
 }
 
 void NXT::halt() {
+    // TODO: halt brick cleanly
+    /*
     for (uint8_t port = 0; port < 3; ++port) {
         this->makeMotor(port)->stop(false);
     }
+    */
     this->halted = true;
 }
 
@@ -417,7 +428,7 @@ double NXT::getFirmwareVersion() {
     const int min = 4, maj = 5;
 
     Message msg(false, true);
-    msg.add_u8(Message::GET_FIRMWARE_VERSION);
+    msg.add_u8(uint8_t(Opcode::GET_FIRMWARE_VERSION));
     std::string data = msg.get_value();
 
     // Send the system command to the NXT.
@@ -460,7 +471,86 @@ NXT::NXT(Comm *comm) {
     this->halted = false;
 }
 
-void NXT::sendSystemCommand(bool response, int8_t * dc_buf,
+ConfiguredNXT* NXT::configure(SensorType sensor1, SensorType sensor2,
+        SensorType sensor3, SensorType sensor4,
+        MotorType motorA, MotorType motorB, MotorType motorC) {
+
+     Sensor* sensorObject1 = this->sensorFactory.makeSensor(sensor1, SensorPort::IN_1, this->comm_);
+     Sensor* sensorObject2 = this->sensorFactory.makeSensor(sensor2, SensorPort::IN_2, this->comm_);
+     Sensor* sensorObject3 = this->sensorFactory.makeSensor(sensor3, SensorPort::IN_3, this->comm_);
+     Sensor* sensorObject4 = this->sensorFactory.makeSensor(sensor4, SensorPort::IN_4, this->comm_);
+
+     Motor* motorObjectA = this->motorFactory.makeMotor(motorA, MotorPort::OUT_A, this->comm_);
+     Motor* motorObjectB = this->motorFactory.makeMotor(motorB, MotorPort::OUT_B, this->comm_);
+     Motor* motorObjectC = this->motorFactory.makeMotor(motorC, MotorPort::OUT_C, this->comm_);
+
+     ConfiguredNXT *configuredNXT = new ConfiguredNXT(this, this->comm_,
+         sensorObject1, sensorObject2, sensorObject3, sensorObject4,
+         motorObjectA, motorObjectB, motorObjectC);
+
+     return configuredNXT;
+}
+
+ConfiguredNXT::ConfiguredNXT(NXT *nxt, Comm *comm, Sensor *sensor1, Sensor *sensor2,
+        Sensor *sensor3, Sensor *sensor4,
+        Motor *motorA, Motor *motorB, Motor *motorC) {
+     this->nxt_ = nxt;
+
+     this->comm_ = comm;
+
+     this->sensorPorts.push_back(sensor1);
+     this->sensorPorts.push_back(sensor2);
+     this->sensorPorts.push_back(sensor3);
+     this->sensorPorts.push_back(sensor4);
+
+     this->motorPorts.push_back(motorA);
+     this->motorPorts.push_back(motorB);
+     this->motorPorts.push_back(motorC);
+}
+
+Motor * MotorFactory::makeMotor(MotorType type, MotorPort port, Comm *comm) {
+    Motor *motor;
+
+    switch(type) {
+        case MotorType::STANDARD_MOTOR:
+            motor = new StandardMotor(comm, port);
+            break;
+        default:
+            motor = new NullMotor;
+    }
+
+    return motor;
+}
+
+Sensor * SensorFactory::makeSensor(SensorType type, SensorPort port, Comm *comm) {
+    Sensor *sensor;
+
+    switch(type) {
+
+        case SensorType::ACTIVE_LIGHT_SENSOR:
+            sensor = new ActiveLightSensor(comm, port);
+            break;
+        case SensorType::PASSIVE_LIGHT_SENSOR:
+            sensor = new PassiveLightSensor(comm, port);
+            break;
+        case SensorType::TOUCH_SENSOR:
+            sensor = new TouchSensor(comm, port);
+            break;
+        case SensorType::SONAR_SENSOR:
+            sensor = new SonarSensor(comm, port);
+            break;
+        default:
+            sensor = new NullSensor(port);
+    }
+
+    return sensor;
+}
+
+bool Comm::open() {
+    return this->transport_->open();
+}
+
+void Comm::sendSystemCommand(bool response, int8_t * dc_buf,
                             size_t dc_buf_size, uint8_t * re_buf, size_t re_buf_size) {
     uint8_t buf[dc_buf_size + 1];
 
@@ -468,17 +558,17 @@ void NXT::sendSystemCommand(bool response, int8_t * dc_buf,
 
     buf[0] = response ? 0x01 : 0x81;
 
-    this->comm_->devWrite(buf, dc_buf_size + 1);
+    this->transport_->devWrite(buf, dc_buf_size + 1);
 
     if (response) {
         unsigned char tempreadbuf[re_buf_size];
-        this->comm_->devRead(tempreadbuf, re_buf_size);
+        this->transport_->devRead(tempreadbuf, re_buf_size);
 
         std::copy(tempreadbuf + 1, tempreadbuf + re_buf_size, re_buf);
     }
 }
 
-void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
+void Comm::sendDirectCommand(bool response, int8_t * dc_buf,
                             size_t dc_buf_size, unsigned char * re_buf, size_t re_buf_size) {
     uint8_t buf[dc_buf_size + 1];
 
@@ -486,16 +576,16 @@ void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
 
     buf[0] = response ? 0x00 : 0x80;
 
-    this->comm_->devWrite(buf, dc_buf_size + 1);
+    this->transport_->devWrite(buf, dc_buf_size + 1);
 
     if (response) {
-        this->comm_->devRead(re_buf, re_buf_size);
+        this->transport_->devRead(re_buf, re_buf_size);
     }
 }
 
 void NXT::playTone(uint16_t frequency, uint16_t duration) {
     Message msg(true, false);
-    msg.add_u8(Message::PLAY_TONE);
+    msg.add_u8(uint8_t(Opcode::PLAY_TONE));
 
     msg.add_u16(frequency);
     msg.add_u16(duration);
@@ -507,17 +597,17 @@ void NXT::playTone(uint16_t frequency, uint16_t duration) {
 
 void NXT::stopSound() {
     Message msg(true, false);
-    msg.add_u8(Message::STOP_SOUND);
+    msg.add_u8(uint8_t(Opcode::STOP_SOUND));
 
     std::string out = msg.get_value();
 
     this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
-int Motor::getRotationCount() {
+int StandardMotor::getRotationCount() {
     Message msg(true, true);
-    msg.add_u8(Message::GET_ROTATION_COUNT);
-    msg.add_u8(this->port_);
+    msg.add_u8(uint8_t(Opcode::GET_ROTATION_COUNT));
+    msg.add_u8(uint8_t(this->port_));
 
     std::string out = msg.get_value();
 
