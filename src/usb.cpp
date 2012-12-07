@@ -73,6 +73,7 @@ void USBTransport::devRead(unsigned char * buf, int buf_size) {
 USBTransport::USBTransport(libusb_context *ctx, libusb_device *usb_dev) {
     this->ctx_ = ctx;
     this->usb_dev_ = usb_dev;
+    this->pUSBHandle_ = nullptr;
 }
 
 USBTransport::~USBTransport() {

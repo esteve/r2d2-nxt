@@ -53,12 +53,12 @@ enum class SensorPort : uint8_t {
     IN_4 = 3
 };
 
-enum class SensorType {
-    ACTIVE_LIGHT_SENSOR,
-    PASSIVE_LIGHT_SENSOR,
-    TOUCH_SENSOR,
-    SONAR_SENSOR,
-    NULL_SENSOR
+enum class SensorType : uint8_t {
+    ACTIVE_LIGHT_SENSOR = 0x05,
+    PASSIVE_LIGHT_SENSOR = 0x06,
+    TOUCH_SENSOR = 0x01,
+    SONAR_SENSOR = 0x0B,
+    NULL_SENSOR = 0x00
 };
 
 class Sensor;
@@ -85,47 +85,41 @@ protected:
     SensorPort getPort();
 
 public:
-    Sensor(Comm *comm, SensorPort port);
+    Sensor(Comm *comm, SensorPort port, SensorType, Mode);
 
     virtual int getValue() = 0;
 };
 
 class NullSensor : public Sensor {
 public:
-    NullSensor(SensorPort port) : Sensor(nullptr, port) { };
+    NullSensor(SensorPort port) : Sensor(nullptr, port, SensorType::NULL_SENSOR, Mode::RAW) { };
     int getValue() { return 0; };
 };
 
 class AnalogSensor : public Sensor {
 public:
-    AnalogSensor(Comm *comm, SensorPort port) : Sensor(comm, port) { };
+    AnalogSensor(Comm *comm, SensorPort port, SensorType type, Mode mode) : Sensor(comm, port, type, mode) { };
     int getValue();
 };
 
 class TouchSensor : public AnalogSensor {
 public:
-    TouchSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port) { };
-    static const SensorType type_ = SensorType::TOUCH_SENSOR;
-    static const Mode mode_ = Mode::BOOLEAN;
+    TouchSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port, SensorType::TOUCH_SENSOR, Mode::BOOLEAN) { };
 };
 
 class ActiveLightSensor : public AnalogSensor {
 public:
-    ActiveLightSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port) { };
-    static const SensorType type_ = SensorType::ACTIVE_LIGHT_SENSOR;
-    static const Mode mode_ = Mode::RAW;
+    ActiveLightSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port, SensorType::ACTIVE_LIGHT_SENSOR, Mode::RAW) { };
 };
 
 class PassiveLightSensor : public AnalogSensor {
 public:
-    PassiveLightSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port) { };
-    static const SensorType type_ = SensorType::PASSIVE_LIGHT_SENSOR;
-    static const Mode mode_ = Mode::RAW;
+    PassiveLightSensor(Comm *comm, SensorPort port) : AnalogSensor(comm, port, SensorType::PASSIVE_LIGHT_SENSOR, Mode::RAW) { };
 };
 
 class DigitalSensor : public Sensor {
 public:
-    DigitalSensor(Comm *comm, SensorPort port) : Sensor(comm, port) { };
+    DigitalSensor(Comm *comm, SensorPort port) : Sensor(comm, port, SensorType::SONAR_SENSOR, Mode::RAW) { };
 protected:
     int lsGetStatus(uint8_t *);
     void lsRead(uint8_t *);
@@ -136,7 +130,5 @@ class SonarSensor : public DigitalSensor {
 public:
     SonarSensor(Comm *comm, SensorPort port) : DigitalSensor(comm, port) { };
     int getValue();
-    static const SensorType type_ = SensorType::SONAR_SENSOR;
-    static const Mode mode_ = Mode::RAW;
 };
 #endif

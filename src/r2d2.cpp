@@ -211,14 +211,14 @@ ConfiguredNXT::ConfiguredNXT(NXT *nxt, Comm *comm, Sensor *sensor1, Sensor *sens
 
      this->comm_ = comm;
 
-     this->sensorPorts.push_back(sensor1);
-     this->sensorPorts.push_back(sensor2);
-     this->sensorPorts.push_back(sensor3);
-     this->sensorPorts.push_back(sensor4);
+     this->sensorPort1 = sensor1;
+     this->sensorPort2 = sensor2;
+     this->sensorPort3 = sensor3;
+     this->sensorPort4 = sensor4;
 
-     this->motorPorts.push_back(motorA);
-     this->motorPorts.push_back(motorB);
-     this->motorPorts.push_back(motorC);
+     this->motorPortA = motorA;
+     this->motorPortB = motorB;
+     this->motorPortC = motorC;
 }
 
 void NXT::playTone(uint16_t frequency, uint16_t duration) {

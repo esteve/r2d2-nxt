@@ -3,9 +3,13 @@
 
 #include <cstring>
 
-Sensor::Sensor(Comm *comm, SensorPort port) {
+#include <iostream>
+
+Sensor::Sensor(Comm *comm, SensorPort port, SensorType type, Mode mode) {
     this->comm_ = comm;
     this->port_ = port;
+    this->type_ = type;
+    this->mode_ = mode;
 
     Message msg(true, false);
     msg.add_u8(uint8_t(Opcode::SET_INPUT_MODE));
@@ -14,7 +18,10 @@ Sensor::Sensor(Comm *comm, SensorPort port) {
     msg.add_u8(uint8_t(this->mode_));
 
     std::string out = msg.get_value();
-    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+
+    if (nullptr != this->getComm()) { // TODO HACK
+        this->getComm()->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    }
 }
 
 Comm* Sensor::getComm() {

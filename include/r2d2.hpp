@@ -140,19 +140,50 @@ private:
     NXT *nxt_;
     Comm *comm_;
     bool halted;
-    std::vector<Sensor *> sensorPorts;
-    std::vector<Motor *> motorPorts;
+    Sensor *sensorPort1;
+    Sensor *sensorPort2;
+    Sensor *sensorPort3;
+    Sensor *sensorPort4;
+
+    Motor *motorPortA;
+    Motor *motorPortB;
+    Motor *motorPortC;
 
 public:
 
     ConfiguredNXT(NXT *, Comm *, Sensor *, Sensor *, Sensor *, Sensor *, Motor *, Motor *, Motor *);
 
     Sensor * sensorPort(SensorPort port) {
-        return this->sensorPorts.at(uint8_t(port));
+        switch(port) {
+            case SensorPort::IN_1:
+                return sensorPort1;
+
+            case SensorPort::IN_2:
+                return sensorPort2;
+
+            case SensorPort::IN_3:
+                return sensorPort3;
+
+            case SensorPort::IN_4:
+                return sensorPort4;
+            default:
+                return nullptr;
+        }
     };
 
     Motor *motorPort(MotorPort port) {
-        return this->motorPorts.at(uint8_t(port));
+        switch(port) {
+            case MotorPort::OUT_A:
+                return motorPortA;
+
+            case MotorPort::OUT_B:
+                return motorPortB;
+
+            case MotorPort::OUT_C:
+                return motorPortC;
+            default:
+                return nullptr;
+        }
     };
 
     std::string getName();
