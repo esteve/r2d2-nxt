@@ -188,6 +188,11 @@ ConfiguredNXT* NXT::configure(SensorType sensor1, SensorType sensor2,
         SensorType sensor3, SensorType sensor4,
         MotorType motorA, MotorType motorB, MotorType motorC) {
 
+     if (!this->open()) {
+         // TODO raise an exception
+         return nullptr;
+     }
+
      Sensor* sensorObject1 = this->sensorFactory.makeSensor(sensor1, SensorPort::IN_1, this->comm_);
      Sensor* sensorObject2 = this->sensorFactory.makeSensor(sensor2, SensorPort::IN_2, this->comm_);
      Sensor* sensorObject3 = this->sensorFactory.makeSensor(sensor3, SensorPort::IN_3, this->comm_);
