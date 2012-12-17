@@ -9,15 +9,11 @@ int main()
 
     USBNXTManager usbm;
     NXT* nxt = usbm.list()->at(0);
-    ConfiguredNXT* configuredNXT = nxt->configure(SensorType::NULL_SENSOR, SensorType::NULL_SENSOR,
-        SensorType::TOUCH_SENSOR, SensorType::NULL_SENSOR, MotorType::STANDARD_MOTOR, MotorType::STANDARD_MOTOR,
-        MotorType::STANDARD_MOTOR);
-
     int turnCount = 0;
     if (nxt->open()) { //initialize the NXT and continue if it succeds
         std::cout << nxt->getName() << std::endl;
-        Sensor* sensor = configuredNXT->sensorPort(SensorPort::IN_2); //tell the NXT that the touch sensor is in port 1
-        Motor* motor = configuredNXT->motorPort(MotorPort::OUT_A);
+        Sensor* sensor = nxt->makeTouch(NXT::IN_2); //tell the NXT that the touch sensor is in port 1
+        Motor* motor = nxt->makeMotor(NXT::OUT_A);
         int oldCount = motor->getRotationCount();
         while (1) { //main loop
             if (sensor->getValue() == true) //if the touch sensor is pressed down...

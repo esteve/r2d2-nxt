@@ -24,37 +24,20 @@
 #include <sstream>
 #include <vector>
 
-#include <r2d2/comm.hpp>
-#include <r2d2/motors.hpp>
-#include <r2d2/sensors.hpp>
-
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
-enum class Opcode : uint8_t {
-    SET_INPUT_MODE = 0x05,
-    LOWSPEED_9V = 0x0B,
+class Comm {
+public:
+    virtual void devWrite(uint8_t *, int) = 0;
+    virtual void devRead(unsigned char *, int) = 0;
+    virtual bool open() = 0;
+};
 
-
-    LS_GET_STATUS = 0x0E,
-    LS_WRITE = 0x0F,
-    LS_READ = 0x10,
-
-    GET_VALUE = 0x07,
-
-    TOUCH = 0x01,
-
-    START_MOTOR = 0x04,
-    STOP_MOTOR = 0x04,
-    RESET_ROTATION_COUNT = 0x0A,
-    GET_ROTATION_COUNT = 0x06,
-
-    PLAY_TONE = 0x03,
-    STOP_SOUND = 0x0C,
-
-    ACTIVE_LIGHT = 0x05,
-    PASSIVE_LIGHT = 0x06,
-
-    GET_FIRMWARE_VERSION = 0x88
+class Mode {
+public:
+    static const int RAW = 0x00;
+    static const int BOOLEAN = 0x20;
+    static const int PCT_FULL_SCALE = 0x80;
 };
 
 class Message {
@@ -66,6 +49,31 @@ private:
     uint8_t opcode_;
 
 public:
+    static const int SET_INPUT_MODE = 0x05;
+    static const int LOWSPEED_9V = 0x0B;
+
+
+    static const int LS_GET_STATUS = 0x0E;
+    static const int LS_WRITE = 0x0F;
+    static const int LS_READ = 0x10;
+
+    static const int GET_VALUE = 0x07;
+
+    static const int TOUCH = 0x01;
+
+    static const int START_MOTOR = 0x04;
+    static const int STOP_MOTOR = 0x04;
+    static const int RESET_ROTATION_COUNT = 0x0A;
+    static const int GET_ROTATION_COUNT = 0x06;
+
+    static const int PLAY_TONE = 0x03;
+    static const int STOP_SOUND = 0x0C;
+
+    static const int ACTIVE_LIGHT = 0x05;
+    static const int PASSIVE_LIGHT = 0x06;
+
+    static const int GET_FIRMWARE_VERSION = 0x88;
+
     Message(bool isDirect, bool requiresResponse);
 
     Message(const std::string &s);
@@ -103,17 +111,33 @@ public:
     int8_t parse_s8();
 };
 
-class ConfiguredNXT;
+class Sensor;
+
+class SonarSensor;
+class TouchSensor;
+class LightSensor;
+
+class Motor;
 
 class NXT {
 private:
     Comm *comm_;
     bool halted;
-    SensorFactory sensorFactory;
-    MotorFactory motorFactory;
 
 public:
+    static const int OUT_A = 0;
+    static const int OUT_B = 1;
+    static const int OUT_C = 2;
+
+    static const int IN_1 = 0;
+    static const int IN_2 = 1;
+    static const int IN_3 = 2;
+    static const int IN_4 = 3;
+
     NXT(Comm *comm);
+    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
+
+    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
 
     bool open();
 
@@ -123,50 +147,85 @@ public:
 
     void getDeviceInfo(uint8_t*, size_t);
 
+    TouchSensor *makeTouch(uint8_t);
+
+    SonarSensor *makeSonar(uint8_t);
+
+    LightSensor *makeLight(uint8_t, bool);
+
+    Motor *makeMotor(uint8_t);
+
     void halt();
 
     bool isHalted() const;
 
     void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
-
-    ConfiguredNXT* configure(SensorType sensor1, SensorType sensor2,
-        SensorType sensor3, SensorType sensor4,
-        MotorType motorA, MotorType motorB, MotorType motorC);
 };
 
-class ConfiguredNXT {
+class Motor {
 private:
     NXT *nxt_;
-    Comm *comm_;
-    bool halted;
-    std::vector<Sensor *> sensorPorts;
-    std::vector<Motor *> motorPorts;
+    uint8_t port_;
 
 public:
+    Motor(NXT *nxt, uint8_t port);
 
-    ConfiguredNXT(NXT *, Comm *, Sensor *, Sensor *, Sensor *, Sensor *, Motor *, Motor *, Motor *);
+    void setForward(uint8_t power);
 
-    Sensor * sensorPort(SensorPort port) {
-        return this->sensorPorts.at(uint8_t(port));
-    };
+    void setReverse(uint8_t power);
 
-    Motor *motorPort(MotorPort port) {
-        return this->motorPorts.at(uint8_t(port));
-    };
+    void stop(bool brake);
 
-    std::string getName();
+    void resetRotationCount(bool relative);
 
-    double getFirmwareVersion();
+    int getRotationCount();
+};
 
-    void getDeviceInfo(uint8_t*, size_t);
+class Sensor {
+private:
+    NXT *nxt_;
+    uint8_t port_;
 
-    void halt();
+protected:
+    NXT* getNXT();
+    uint8_t getPort();
 
-    bool isHalted() const;
+public:
+    Sensor(NXT *nxt, uint8_t port);
 
-    void playTone(uint16_t frequency, uint16_t duration);
-    void stopSound();
+    virtual int getValue() = 0;
+};
+
+class AnalogSensor : public Sensor {
+public:
+    AnalogSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+    int getValue();
+};
+
+class TouchSensor : public AnalogSensor {
+public:
+    TouchSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
+};
+
+class LightSensor : public AnalogSensor {
+public:
+    LightSensor(NXT *nxt, uint8_t port) : AnalogSensor(nxt, port) { };
+};
+
+class DigitalSensor : public Sensor {
+public:
+    DigitalSensor(NXT *nxt, uint8_t port) : Sensor(nxt, port) { };
+protected:
+    int lsGetStatus(uint8_t *);
+    void lsRead(uint8_t *);
+    void lsWrite(const std::string&, uint8_t *, size_t);
+};
+
+class SonarSensor : public DigitalSensor {
+public:
+    SonarSensor(NXT *nxt, uint8_t port) : DigitalSensor(nxt, port) { };
+    int getValue();
 };
 
 class NXTManager {

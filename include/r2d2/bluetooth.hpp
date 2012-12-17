@@ -24,7 +24,7 @@
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
-class BTTransport : public Transport {
+class BTComm : public Comm {
 private:
     void *addr_; // this is actually a pointer to a struct sockaddr_rc
     int sock_;
