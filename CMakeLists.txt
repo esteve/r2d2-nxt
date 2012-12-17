@@ -3,7 +3,9 @@ project (R2D2-NXT)
 
 # Add project's CMake modules
 list(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-cxx11/Modules")
 
+include(CheckCXX11Features)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
@@ -17,20 +19,15 @@ if (CXX_HAS_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-# Check that the C++ compiler supports C++11, or at least C++0x
-check_cxx_compiler_flag(--std=c++0x HAS_STD_CPP0X)
-if (HAS_STD_CPP0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
+if(NOT(HAS_CXX11_NULLPTR))
+    add_definitions(-DNEEDS_NULLPTR)
 endif()
 
-check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11)
-if (HAS_STD_CPP11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
-if(NOT(HAS_STD_CPP11 OR HAS_STD_CPP0X))
+if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_INITIALIZER_LIST))
     message("${PROJECT_NAME} requires a compiler that supports C++11")
     return()
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
 endif()
 
 # Set library path to ports path on Mac OSX
