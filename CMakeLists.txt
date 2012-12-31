@@ -2,9 +2,7 @@ cmake_minimum_required (VERSION 2.8)
 project (R2D2-NXT)
 
 # Add project's CMake modules
-list(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-cxx11/Modules")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 include(CheckCXX11Features)
 include(CheckCCompilerFlag)
