@@ -24,7 +24,8 @@
 
 #include <r2d2/comm.hpp>
 
-#if !defined(nullptr)
+#if 0
+//!defined(nullptr)
 // nullptr implementation taken from http://stackoverflow.com/questions/2419800/can-nullptr-be-emulated-in-gcc
 const                        // this is a const object...
 class {

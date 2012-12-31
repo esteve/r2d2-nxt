@@ -4,6 +4,7 @@ project (R2D2-NXT)
 # Add project's CMake modules
 list(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-cxx11/Modules")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 include(CheckCXX11Features)
 include(CheckCCompilerFlag)
@@ -58,15 +59,21 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(R2D2LIBS ${R2D2LIBS} ${Boost_LIBRARIES})
 
 # Require libusb-1.0
-find_package(LIBUSB REQUIRED)
-include_directories(${LIBUSB_INCLUDE_DIRS})
-set(R2D2LIBS ${R2D2LIBS} ${LIBUSB_LIBRARIES})
+find_package(LibUsb1)
+if(NOT LIBUSB1_FOUND)
+    message(FATAL_ERROR "Required library libusb-1.0 NOT FOUND.\nInstall the library (dev version) and try again.")
+endif()
+include_directories(${LIBUSB1_INCLUDE_DIRS})
+set(R2D2LIBS ${R2D2LIBS} ${LIBUSB1_LIBRARIES})
 
 # Add the Bluetooth libraries on Linux only
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    find_package(BLUETOOTH REQUIRED)
-    include_directories(${LIBBLUETOOTH_INCLUDE_DIRS})
-    set(R2D2LIBS ${R2D2LIBS} ${LIBBLUETOOTH_LIBRARIES})
+    find_package(Bluez)
+    if(NOT LIBUSB1_FOUND)
+        message(FATAL_ERROR "Required library Bluez (libbluetooth) NOT FOUND.\nInstall the library (dev version) and try again.")
+    endif()
+    include_directories(${BLUEZ_INCLUDE_DIRS})
+    set(R2D2LIBS ${R2D2LIBS} ${BLUEZ_LIBRARIES})
 endif()
 
 include_directories(include)
