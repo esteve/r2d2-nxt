@@ -81,10 +81,10 @@ USBTransport::~USBTransport() {
     libusb_close(this->pUSBHandle_);
 }
 
-std::vector<NXT *>* USBNXTManager::list() {
+std::vector<Brick *>* USBBrickManager::list() {
 
     // List all the NXT devices
-    std::vector<NXT*>* v = new std::vector<NXT*>();
+    std::vector<Brick*>* v = new std::vector<Brick*>();
 
     libusb_device **devs;
     libusb_context *ctx = NULL;
@@ -146,8 +146,8 @@ std::vector<NXT *>* USBNXTManager::list() {
         if (desc.idVendor == NXT_VENDOR_ID && desc.idProduct == NXT_PRODUCT_ID) {
             dev = libusb_ref_device(devs[i]);
             USBTransport *transport = new USBTransport(ctx, dev);
-            NXT *nxt = new NXT(new Comm(transport));
-            v->push_back(nxt);
+            Brick *brick = new Brick(new Comm(transport));
+            v->push_back(brick);
         }
     }
     libusb_free_device_list(devs, 1); //free the list, unref the devices in it

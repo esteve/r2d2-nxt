@@ -103,9 +103,9 @@ public:
     int8_t parse_s8();
 };
 
-class ConfiguredNXT;
+class NXT;
 
-class NXT {
+class Brick {
 private:
     Comm *comm_;
     bool halted;
@@ -113,7 +113,7 @@ private:
     MotorFactory motorFactory;
 
 public:
-    NXT(Comm *comm);
+    Brick(Comm *comm);
 
     bool open();
 
@@ -130,14 +130,14 @@ public:
     void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
 
-    ConfiguredNXT* configure(SensorType sensor1, SensorType sensor2,
+    NXT* configure(SensorType sensor1, SensorType sensor2,
         SensorType sensor3, SensorType sensor4,
         MotorType motorA, MotorType motorB, MotorType motorC);
 };
 
-class ConfiguredNXT {
+class NXT {
 private:
-    NXT *nxt_;
+    Brick *brick_;
     Comm *comm_;
     bool halted;
     Sensor *sensorPort1;
@@ -151,7 +151,7 @@ private:
 
 public:
 
-    ConfiguredNXT(NXT *, Comm *, Sensor *, Sensor *, Sensor *, Sensor *, Motor *, Motor *, Motor *);
+    NXT(Brick *, Comm *, Sensor *, Sensor *, Sensor *, Sensor *, Motor *, Motor *, Motor *);
 
     Sensor * sensorPort(SensorPort port) {
         switch(port) {
@@ -200,8 +200,8 @@ public:
     void stopSound();
 };
 
-class NXTManager {
+class BrickManager {
 public:
-    virtual std::vector<NXT *>* list() = 0;
+    virtual std::vector<Brick *>* list() = 0;
 };
 #endif
