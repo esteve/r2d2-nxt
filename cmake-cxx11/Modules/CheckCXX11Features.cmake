@@ -10,6 +10,7 @@
 #  HAS_CXX11_CONSTEXPR          - constexpr keyword
 #  HAS_CXX11_CSTDINT_H          - cstdint header
 #  HAS_CXX11_DECLTYPE           - decltype keyword
+#  HAS_CXX11_ENUM_CLASS         - type-safe enums
 #  HAS_CXX11_FUNC               - __func__ preprocessor constant
 #  HAS_CXX11_INITIALIZER_LIST   - initializer list
 #  HAS_CXX11_LAMBDA             - lambdas
@@ -22,6 +23,7 @@
 #  HAS_CXX11_VARIADIC_TEMPLATES - variadic templates
 
 #=============================================================================
+# Copyright 2012 Esteve Fernandez <esteve@apache.org>
 # Copyright 2011,2012 Rolf Eike Beer <eike@sf-mail.de>
 # Copyright 2012 Andreas Weis
 #
@@ -121,6 +123,7 @@ cxx11_check_feature("class_override_final" HAS_CXX11_CLASS_OVERRIDE)
 cxx11_check_feature("constexpr" HAS_CXX11_CONSTEXPR)
 cxx11_check_feature("cstdint" HAS_CXX11_CSTDINT_H)
 cxx11_check_feature("decltype" HAS_CXX11_DECLTYPE)
+cxx11_check_feature("enum_class" HAS_CXX11_ENUM_CLASS)
 cxx11_check_feature("initializer_list" HAS_CXX11_INITIALIZER_LIST)
 cxx11_check_feature("lambda" HAS_CXX11_LAMBDA)
 cxx11_check_feature("long_long" HAS_CXX11_LONG_LONG)
