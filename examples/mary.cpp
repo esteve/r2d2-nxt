@@ -2,6 +2,7 @@
 
 #include <r2d2.hpp>
 #include <r2d2/usb.hpp>
+#include <r2d2/bluetooth.hpp>
 
 #include <ctime>
 
@@ -28,7 +29,7 @@ int main()
 {
     std::cout << "R2D2-NXT test project" << std::endl;
 
-    USBBrickManager usbm;
+    BTBrickManager usbm;
     Brick* brick = usbm.list()->at(0);
     if (brick->open()) { //initialize the NXT and continue if it succeds
         std::cout << brick->getName() << std::endl;

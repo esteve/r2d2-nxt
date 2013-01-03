@@ -17,8 +17,8 @@
  * under the License.
  */
 
-#ifndef R2D2_BLUETOOTH_HPP
-#define R2D2_BLUETOOTH_HPP
+#ifndef R2D2_LINUX_BLUETOOTH_HPP
+#define R2D2_LINUX_BLUETOOTH_HPP
 #include <vector>
 #include <r2d2.hpp>
 
@@ -37,14 +37,6 @@ public:
     void devWrite(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size);
 
     void devRead(uint8_t *buf, int buf_size);
-};
-
-class BTBrickManager : public BrickManager {
-    static const int NXT_VENDOR_ID = 0x0694;
-    static const int NXT_PRODUCT_ID = 0x0002;
-
-public:
-    std::vector<Brick *>* list();
 };
 
 void addBTDeviceToList(void *addr, void *arg);

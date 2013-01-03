@@ -1,8 +1,9 @@
 #include <vector>
 #include <cstring>
 #include <r2d2.hpp>
-#include <r2d2/osx_bluetooth_bridge.h>
+#include <r2d2/bluetooth.hpp>
 #include <r2d2/osx_bluetooth.hpp>
+#include <r2d2/osx_bluetooth_bridge.h>
 
 BTTransport::BTTransport(const BluetoothDeviceAddress *addr) {
     this->addr_ = addr;

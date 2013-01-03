@@ -24,8 +24,6 @@
 #include <IOBluetooth/Bluetooth.h>
 #include <IOBluetooth/IOBluetoothUserLib.h>
 
-#define NXT_BLUETOOTH_ADDRESS "00:16:53"
-
 class BTTransport : public Transport {
 private:
     const BluetoothDeviceAddress *addr_;
@@ -41,13 +39,5 @@ public:
     void devRead(uint8_t *buf, int buf_size);
 };
 
-class BTBrickManager : public BrickManager {
-    static const int NXT_VENDOR_ID = 0x0694;
-    static const int NXT_PRODUCT_ID = 0x0002;
-
-public:
-    std::vector<Brick *>* list();
-};
-
-void addBTDeviceToList(void *addr, void *arg);
+void addBTDeviceToList(const BluetoothDeviceAddress *addr, void *arg);
 #endif

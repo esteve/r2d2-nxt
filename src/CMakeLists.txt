@@ -6,8 +6,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     find_library(LIBBLUETOOTH bluetooth)
     set(R2D2LIBS ${R2D2LIBS} ${LIBBLUETOOTH})
 
-    SET_SOURCE_FILES_PROPERTIES(bluetooth.cpp PROPERTIES COMPILE_FLAGS "${CXX11_COMPILER_FLAGS}")
-    set(R2D2SRC ${R2D2SRC} bluetooth.cpp bluetooth_bridge.c)
+    SET_SOURCE_FILES_PROPERTIES(linux_bluetooth.cpp PROPERTIES COMPILE_FLAGS "${CXX11_COMPILER_FLAGS}")
+    set(R2D2SRC ${R2D2SRC} linux_bluetooth.cpp linux_bluetooth_bridge.c)
 
 elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     SET_SOURCE_FILES_PROPERTIES(osx_bluetooth.cpp PROPERTIES COMPILE_FLAGS "${CXX11_COMPILER_FLAGS}")

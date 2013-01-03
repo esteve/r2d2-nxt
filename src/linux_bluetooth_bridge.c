@@ -6,7 +6,7 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 
-#include <r2d2/bluetooth_bridge.h>
+#include <r2d2/linux_bluetooth_bridge.h>
 
 int r2d2_bt_create_socket() {
     return socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
