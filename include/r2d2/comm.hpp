@@ -22,6 +22,9 @@
 
 #include <cstdint>
 
+// XXX FIX FORWARD DECLARATION
+class Message;
+
 class Transport {
 public:
     virtual void devWrite(uint8_t *, int) = 0;
@@ -35,9 +38,7 @@ private:
 public:
     Comm(Transport *transport) : transport_(transport) {}
 
-    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
-
-    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
+    void sendMessage(Message &msg, uint8_t * re_buf, size_t re_buf_size);
 
     bool open();
 };

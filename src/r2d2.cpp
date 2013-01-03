@@ -9,6 +9,11 @@
 Message::Message(bool isDirect, bool requiresResponse) {
     this->isDirect_ = isDirect;
     this->requiresResponse_ = requiresResponse;
+    this->type_ = 0x00 | !isDirect;
+    if (!requiresResponse) {
+        this->type_ |= 0x80;
+    }
+    this->sstream_ << this->type_;
 }
 
 Message::Message(const std::string &s) {
@@ -142,10 +147,9 @@ double Brick::getFirmwareVersion() {
 
     Message msg(false, true);
     msg.add_u8(uint8_t(Opcode::GET_FIRMWARE_VERSION));
-    std::string data = msg.get_value();
 
     // Send the system command to the NXT.
-    this->comm_->sendSystemCommand(true, (int8_t *)data.c_str(), data.size(), outBuf, sizeof(outBuf));
+    this->comm_->sendMessage(msg, outBuf, sizeof(outBuf));
 
     double version = outBuf[min];
 
@@ -158,10 +162,11 @@ double Brick::getFirmwareVersion() {
 
 void Brick::getDeviceInfo(uint8_t * outBuf, size_t size) {
     //uint8_t inBuf[] = { 0x01, 0x9B };
-    int8_t inBuf[] = { static_cast<int8_t>(0x9B) };
+    Message msg(false, true);
+    msg.add_u8(uint8_t(Opcode::GET_DEVICE_INFO));
 
     // Send the system command to the NXT.
-    this->comm_->sendSystemCommand(true, inBuf, sizeof(inBuf), outBuf, size);
+    this->comm_->sendMessage(msg, outBuf, size);
 }
 
 std::string Brick::getName() {
@@ -172,7 +177,7 @@ std::string Brick::getName() {
 
     this->getDeviceInfo(outBuf, sizeof(outBuf));
 
-    std::memcpy(name, outBuf + 2, 15 * sizeof(uint8_t));
+    std::memcpy(name, outBuf + 3, 15 * sizeof(uint8_t));
 
     name[15] = '\0';
 
@@ -233,16 +238,11 @@ void Brick::playTone(uint16_t frequency, uint16_t duration) {
     msg.add_u16(frequency);
     msg.add_u16(duration);
 
-    std::string out = msg.get_value();
-
-    this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->comm_->sendMessage(msg, NULL, 0);
 }
 
 void Brick::stopSound() {
     Message msg(true, false);
     msg.add_u8(uint8_t(Opcode::STOP_SOUND));
-
-    std::string out = msg.get_value();
-
-    this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->comm_->sendMessage(msg, NULL, 0);
 }

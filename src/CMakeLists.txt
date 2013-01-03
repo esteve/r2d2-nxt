@@ -1,10 +1,16 @@
+set(CMAKE_SHARED_LINKER_FLAGS "-framework Foundation -framework IOBluetooth")
+
 set(R2D2SRC ${R2D2SRC} r2d2.cpp usb.cpp motors.cpp sensors.cpp comm.cpp)
+
+SET_SOURCE_FILES_PROPERTIES(${R2D2SRC} PROPERTIES COMPILE_FLAGS "${CXX11_COMPILER_FLAGS}")
 
 if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     find_library(LIBBLUETOOTH bluetooth)
     set(R2D2LIBS ${R2D2LIBS} ${LIBBLUETOOTH})
 
     set(R2D2SRC ${R2D2SRC} bluetooth.cpp bluetooth_bridge.c)
+elif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    set(R2D2SRC ${R2D2SRC} osx_bluetooth_bridge.m)
 endif()
 
 add_library(r2d2shared SHARED ${R2D2SRC})

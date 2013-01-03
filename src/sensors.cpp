@@ -5,6 +5,15 @@
 
 #include <iostream>
 
+
+void LSMessage::add_u8(uint8_t v) {
+    this->sstream_ << v;
+}
+
+std::string LSMessage::get_value() {
+    return this->sstream_.str();
+}
+
 Sensor::Sensor(Comm *comm, SensorPort port, SensorType type, Mode mode) {
     this->comm_ = comm;
     this->port_ = port;
@@ -17,10 +26,8 @@ Sensor::Sensor(Comm *comm, SensorPort port, SensorType type, Mode mode) {
     msg.add_u8(uint8_t(this->type_));
     msg.add_u8(uint8_t(this->mode_));
 
-    std::string out = msg.get_value();
-
     if (nullptr != this->getComm()) { // TODO HACK
-        this->getComm()->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+        this->getComm()->sendMessage(msg, NULL, 0);
     }
 }
 
@@ -37,13 +44,11 @@ int AnalogSensor::getValue() {
     msg.add_u8(uint8_t(Opcode::GET_VALUE));
     msg.add_u8(uint8_t(this->getPort()));
 
-    std::string out = msg.get_value();
-
     unsigned char responseBuffer[16];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getComm()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendMessage(msg, responseBuffer, sizeof(responseBuffer));
 
     std::string s(responseBuffer, responseBuffer + 16);
 
@@ -74,13 +79,11 @@ int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
     msg.add_u8(uint8_t(Opcode::LS_GET_STATUS));
     msg.add_u8(uint8_t(this->getPort()));
 
-    std::string out = msg.get_value();
-
     unsigned char responseBuffer[4];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getComm()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendMessage(msg, responseBuffer, sizeof(responseBuffer));
 
     std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
 
@@ -92,18 +95,18 @@ void DigitalSensor::lsRead(uint8_t *outbuf) {
     msg.add_u8(uint8_t(Opcode::LS_READ));
     msg.add_u8(uint8_t(this->getPort()));
 
-    std::string out = msg.get_value();
-
     unsigned char responseBuffer[20];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getComm()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendMessage(msg, responseBuffer, sizeof(responseBuffer));
 
     std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
 }
 
-void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t outSize) {
+void DigitalSensor::lsWrite(LSMessage &lsmsg, uint8_t *outBuf, size_t outSize) {
+    std::string indata = lsmsg.get_value();
+
     Message msg(true, true);
     msg.add_u8(uint8_t(Opcode::LS_WRITE));
     msg.add_u8(uint8_t(this->getPort()));
@@ -111,38 +114,34 @@ void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t o
     msg.add_u8(outSize);
     msg.add_string(indata.size(), indata);
 
-    std::string tosend = msg.get_value();
-
     unsigned char responseBuffer[3];
 
     memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->getComm()->sendDirectCommand(true, (int8_t *)(tosend.c_str()), tosend.size(), responseBuffer, sizeof(responseBuffer));
+    this->getComm()->sendMessage(msg, responseBuffer, sizeof(responseBuffer));
 
     std::memcpy(outBuf, responseBuffer, outSize * sizeof(uint8_t));
 }
 
 int SonarSensor::getValue() {
-    Message msg(true, true);
-    msg.add_u8(0x02); // I2C_DEV
-    msg.add_u8(0x41); // COMMAND
-    msg.add_u8(0x02); // CONTINUOUS
+    LSMessage lsmsgInit;
 
-    std::string out = msg.get_value();
+    lsmsgInit.add_u8(0x02); // I2C_DEV
+    lsmsgInit.add_u8(0x41); // COMMAND
+    lsmsgInit.add_u8(0x02); // CONTINUOUS
 
     uint8_t outbuf2[66];
     memset(outbuf2, 1, sizeof(outbuf2));
-    this->lsWrite(out, outbuf2, 0x00);
+    this->lsWrite(lsmsgInit, outbuf2, 0x00);
 
     while (1) {
-        Message msg(true, true);
-        msg.add_u8(0x02); // I2C_DEV
-        msg.add_u8(0x42); // READ VALUE FROM I2C
-        std::string out2 = msg.get_value();
+        LSMessage lsmsgRead;
+        lsmsgRead.add_u8(0x02); // I2C_DEV
+        lsmsgRead.add_u8(0x42); // READ VALUE FROM I2C
 
         uint8_t outbuf3[66];
         memset(outbuf3, 1, sizeof(outbuf3));
-        this->lsWrite(out2, outbuf3, 1);
+        this->lsWrite(lsmsgRead, outbuf3, 1);
 
         uint8_t outbuf4[4];
         memset(outbuf4, 1, sizeof(outbuf4));

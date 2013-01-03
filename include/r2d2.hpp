@@ -54,7 +54,9 @@ enum class Opcode : uint8_t {
     ACTIVE_LIGHT = 0x05,
     PASSIVE_LIGHT = 0x06,
 
-    GET_FIRMWARE_VERSION = 0x88
+    GET_FIRMWARE_VERSION = 0x88,
+
+    GET_DEVICE_INFO = 0x9B
 };
 
 class Message {

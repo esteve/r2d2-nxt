@@ -22,7 +22,9 @@ if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_NULLPTR AND HAS_CXX11_ENUM_CLASS))
     message("${PROJECT_NAME} requires a compiler that supports C++11")
     return()
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
+
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
+
 endif()
 
 # Set library path to ports path on Mac OSX
@@ -33,6 +35,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     # Use Clang's libc++ on Mac OSX
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+
+SET_SOURCE_FILES_PROPERTIES(
+    "*.cpp"
+    PROPERTIES
+        COMPILE_FLAGS ${CXX11_COMPILER_FLAGS})
 
 # Mac OSX requires boost.system
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
