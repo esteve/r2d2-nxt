@@ -20,11 +20,7 @@ if (CXX_HAS_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-if(NOT(HAS_CXX11_NULLPTR))
-    add_definitions(-DNEEDS_NULLPTR)
-endif()
-
-if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_INITIALIZER_LIST))
+if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_INITIALIZER_LIST AND HAS_CXX11_NULLPTR AND HAS_CXX11_ENUM_CLASS))
     message("${PROJECT_NAME} requires a compiler that supports C++11")
     return()
 else()

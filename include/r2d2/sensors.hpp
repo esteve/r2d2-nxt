@@ -24,23 +24,6 @@
 
 #include <r2d2/comm.hpp>
 
-#if 0
-//!defined(nullptr)
-// nullptr implementation taken from http://stackoverflow.com/questions/2419800/can-nullptr-be-emulated-in-gcc
-const                        // this is a const object...
-class {
-public:
-  template<class T>          // convertible to any type
-    operator T*() const      // of null non-member
-    { return 0; }            // pointer...
-  template<class C, class T> // or any type of null
-    operator T C::*() const  // member pointer...
-    { return 0; }
-private:
-  void operator&() const;    // whose address can't be taken
-} nullptr = {};              // and whose name is nullptr
-#endif
-
 enum class Mode : uint8_t {
     RAW = 0x00,
     BOOLEAN = 0x20,
