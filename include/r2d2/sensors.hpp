@@ -24,6 +24,16 @@
 
 #include <r2d2/comm.hpp>
 
+class LSMessage {
+private:
+    std::stringstream sstream_;
+
+public:
+    void add_u8(uint8_t v);
+
+    std::string get_value();
+};
+
 enum class Mode : uint8_t {
     RAW = 0x00,
     BOOLEAN = 0x20,
@@ -107,7 +117,7 @@ public:
 protected:
     int lsGetStatus(uint8_t *);
     void lsRead(uint8_t *);
-    void lsWrite(const std::string&, uint8_t *, size_t);
+    void lsWrite(LSMessage&, uint8_t *, size_t);
 };
 
 class SonarSensor : public DigitalSensor {

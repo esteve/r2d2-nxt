@@ -23,9 +23,7 @@ void StandardMotor::setForward(uint8_t power) {
     msg.add_u8(0x00); // UNKNOWN
     msg.add_u8(0x00); // UNKNOWN
 
-    std::string out = msg.get_value();
-
-    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendMessage(msg, NULL, 0);
 }
 
 void StandardMotor::setReverse(uint8_t power) {
@@ -43,9 +41,7 @@ void StandardMotor::setReverse(uint8_t power) {
     msg.add_u8(0x00); // UNKNOWN
     msg.add_u8(0x00); // UNKNOWN
 
-    std::string out = msg.get_value();
-
-    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendMessage(msg, NULL, 0);
 }
 
 void StandardMotor::stop(bool brake) {
@@ -71,9 +67,7 @@ void StandardMotor::stop(bool brake) {
     msg.add_u8(0x00); // UNKNOWN
     msg.add_u8(0x00); // UNKNOWN
 
-    std::string out = msg.get_value();
-
-    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendMessage(msg, NULL, 0);
 }
 
 void StandardMotor::resetRotationCount(bool relative) {
@@ -82,9 +76,7 @@ void StandardMotor::resetRotationCount(bool relative) {
     msg.add_u8(uint8_t(this->port_));
     msg.add_u8(relative);
 
-    std::string out = msg.get_value();
-
-    this->comm_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
+    this->comm_->sendMessage(msg, NULL, 0);
 }
 
 Motor * MotorFactory::makeMotor(MotorType type, MotorPort port, Comm *comm) {
@@ -112,7 +104,7 @@ int StandardMotor::getRotationCount() {
 
     std::memset(responseBuffer, 1, sizeof(responseBuffer));
 
-    this->comm_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
+    this->comm_->sendMessage(msg, responseBuffer, sizeof(responseBuffer));
 
     std::string s(responseBuffer, responseBuffer + 25);
 
