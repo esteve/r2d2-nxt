@@ -58,6 +58,11 @@ elseif (_HAS_CXX0X_FLAG)
     set(CXX11_COMPILER_FLAGS "-std=c++0x")
 endif ()
 
+check_cxx_compiler_flag("-stdlib=libc++" _HAS_CLANG_LIBCXX_FLAG)
+if (_HAS_CLANG_LIBCXX_FLAG)
+    set(CXX11_COMPILER_FLAGS "${CXX11_COMPILER_FLAGS} -stdlib=libc++")
+endif()
+
 function(cxx11_check_feature FEATURE_NAME RESULT_VAR)
     if (NOT DEFINED ${RESULT_VAR})
         set(_bindir "${CMAKE_CURRENT_BINARY_DIR}/cxx11_${FEATURE_NAME}")
