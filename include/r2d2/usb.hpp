@@ -47,7 +47,7 @@ public:
 
     bool open();
 
-    void devWrite(uint8_t * buf, int buf_size);
+    void devWrite(bool, uint8_t * buf, int buf_size, unsigned char * re_buf, int re_buf_size);
 
     void devRead(unsigned char * buf, int buf_size);
 

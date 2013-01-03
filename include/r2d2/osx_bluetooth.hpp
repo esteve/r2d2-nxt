@@ -17,29 +17,37 @@
  * under the License.
  */
 
-#ifndef R2D2_COMM_HPP
-#define R2D2_COMM_HPP
+#ifndef R2D2_OSX_BLUETOOTH_HPP
+#define R2D2_OSX_BLUETOOTH_HPP
+#include <vector>
+#include <r2d2.hpp>
+#include <IOBluetooth/Bluetooth.h>
+#include <IOBluetooth/IOBluetoothUserLib.h>
 
-#include <cstdint>
+#define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
-// XXX FIX FORWARD DECLARATION
-class Message;
-
-class Transport {
-public:
-    virtual void devWrite(bool, uint8_t *, int, unsigned char *, int) = 0;
-    virtual void devRead(unsigned char *, int) = 0;
-    virtual bool open() = 0;
-};
-
-class Comm {
+class BTTransport : public Transport {
 private:
-    Transport *transport_;
+    const BluetoothDeviceAddress *addr_;
+    IOBluetoothRFCOMMChannelRef rfcommChannelRef_;
 public:
-    Comm(Transport *transport) : transport_(transport) {}
-
-    void sendMessage(Message &msg, uint8_t * re_buf, size_t re_buf_size);
+    BTTransport(const BluetoothDeviceAddress *addr);
+    ~BTTransport();
 
     bool open();
+
+    void devWrite(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size);
+
+    void devRead(uint8_t *buf, int buf_size);
 };
+
+class BTBrickManager : public BrickManager {
+    static const int NXT_VENDOR_ID = 0x0694;
+    static const int NXT_PRODUCT_ID = 0x0002;
+
+public:
+    std::vector<Brick *>* list();
+};
+
+void addBTDeviceToList(void *addr, void *arg);
 #endif

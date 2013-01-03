@@ -40,7 +40,7 @@ bool USBTransport::open() {
     return true;
 }
 
-void USBTransport::devWrite(uint8_t * buf, int buf_size) {
+void USBTransport::devWrite(bool requiresResponse, uint8_t * buf, int buf_size, unsigned char * re_buf, int re_buf_size) {
     boost::mutex::scoped_lock lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
@@ -51,6 +51,18 @@ void USBTransport::devWrite(uint8_t * buf, int buf_size) {
             std::cerr << "READ: " << actual_length << std::endl;
             std::cerr << "BUF LEN: " << buf_size << std::endl;
             std::cerr << "RES: " << r << std::endl;
+        }
+
+        if(requiresResponse) {
+            int re_actual_length;
+            int r2 = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpOut_, re_buf, re_buf_size, &re_actual_length, TIMEOUT);
+            if (r2 == 0 && re_actual_length <= re_buf_size) {
+            } else {
+                std::cerr << "ERROR READING" << std::endl;
+                std::cerr << "READ: " << re_actual_length << std::endl;
+                std::cerr << "BUF LEN: " << re_buf_size << std::endl;
+                std::cerr << "RES: " << r2 << std::endl;
+           }
         }
     }
 }
