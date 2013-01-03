@@ -16,9 +16,9 @@ BTTransport::~BTTransport() {
 
 void addBTDeviceToList(void *addr, void *arg) {
     BTTransport *transport = new BTTransport(addr);
-    NXT *nxt = new NXT(new Comm(transport));
-    std::vector<NXT *> *v = static_cast< std::vector<NXT *> *>(arg);
-    v->push_back(nxt);
+    Brick *brick = new Brick(new Comm(transport));
+    std::vector<Brick *> *v = static_cast< std::vector<Brick *> *>(arg);
+    v->push_back(brick);
 }
 
 bool BTTransport::open() {
@@ -52,10 +52,10 @@ void BTTransport::devRead(uint8_t * buf, int buf_size) {
     }
 }
 
-std::vector<NXT *>* BTNXTManager::list() {
+std::vector<Brick *>* BTBrickManager::list() {
 
     // List all the NXT devices
-    std::vector<NXT*>* v = new std::vector<NXT*>();
+    std::vector<Brick*>* v = new std::vector<Brick*>();
 
     r2d2_bt_scan(addBTDeviceToList, v);
 

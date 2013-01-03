@@ -118,15 +118,15 @@ std::string Message::get_value() {
     return this->sstream_.str();
 }
 
-bool NXT::open() {
+bool Brick::open() {
     return this->comm_->open();
 }
 
-bool NXT::isHalted() const {
+bool Brick::isHalted() const {
     return this->halted;
 }
 
-void NXT::halt() {
+void Brick::halt() {
     // TODO: halt brick cleanly
     /*
     for (uint8_t port = 0; port < 3; ++port) {
@@ -136,7 +136,7 @@ void NXT::halt() {
     this->halted = true;
 }
 
-double NXT::getFirmwareVersion() {
+double Brick::getFirmwareVersion() {
     uint8_t outBuf[7];
     const int min = 4, maj = 5;
 
@@ -156,7 +156,7 @@ double NXT::getFirmwareVersion() {
     return version;
 }
 
-void NXT::getDeviceInfo(uint8_t * outBuf, size_t size) {
+void Brick::getDeviceInfo(uint8_t * outBuf, size_t size) {
     //uint8_t inBuf[] = { 0x01, 0x9B };
     int8_t inBuf[] = { static_cast<int8_t>(0x9B) };
 
@@ -164,7 +164,7 @@ void NXT::getDeviceInfo(uint8_t * outBuf, size_t size) {
     this->comm_->sendSystemCommand(true, inBuf, sizeof(inBuf), outBuf, size);
 }
 
-std::string NXT::getName() {
+std::string Brick::getName() {
     uint8_t outBuf[33];
     char name[16];
 
@@ -179,12 +179,12 @@ std::string NXT::getName() {
     return std::string(name);
 }
 
-NXT::NXT(Comm *comm) {
+Brick::Brick(Comm *comm) {
     this->comm_ = comm;
     this->halted = false;
 }
 
-ConfiguredNXT* NXT::configure(SensorType sensor1, SensorType sensor2,
+NXT* Brick::configure(SensorType sensor1, SensorType sensor2,
         SensorType sensor3, SensorType sensor4,
         MotorType motorA, MotorType motorB, MotorType motorC) {
 
@@ -202,17 +202,17 @@ ConfiguredNXT* NXT::configure(SensorType sensor1, SensorType sensor2,
      Motor* motorObjectB = this->motorFactory.makeMotor(motorB, MotorPort::OUT_B, this->comm_);
      Motor* motorObjectC = this->motorFactory.makeMotor(motorC, MotorPort::OUT_C, this->comm_);
 
-     ConfiguredNXT *configuredNXT = new ConfiguredNXT(this, this->comm_,
+     NXT *nxt = new NXT(this, this->comm_,
          sensorObject1, sensorObject2, sensorObject3, sensorObject4,
          motorObjectA, motorObjectB, motorObjectC);
 
-     return configuredNXT;
+     return nxt;
 }
 
-ConfiguredNXT::ConfiguredNXT(NXT *nxt, Comm *comm, Sensor *sensor1, Sensor *sensor2,
+NXT::NXT(Brick *brick, Comm *comm, Sensor *sensor1, Sensor *sensor2,
         Sensor *sensor3, Sensor *sensor4,
         Motor *motorA, Motor *motorB, Motor *motorC) {
-     this->nxt_ = nxt;
+     this->brick_ = brick;
 
      this->comm_ = comm;
 
@@ -226,7 +226,7 @@ ConfiguredNXT::ConfiguredNXT(NXT *nxt, Comm *comm, Sensor *sensor1, Sensor *sens
      this->motorPortC = motorC;
 }
 
-void NXT::playTone(uint16_t frequency, uint16_t duration) {
+void Brick::playTone(uint16_t frequency, uint16_t duration) {
     Message msg(true, false);
     msg.add_u8(uint8_t(Opcode::PLAY_TONE));
 
@@ -238,7 +238,7 @@ void NXT::playTone(uint16_t frequency, uint16_t duration) {
     this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
-void NXT::stopSound() {
+void Brick::stopSound() {
     Message msg(true, false);
     msg.add_u8(uint8_t(Opcode::STOP_SOUND));
 

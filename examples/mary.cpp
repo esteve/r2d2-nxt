@@ -11,14 +11,14 @@ int E = 659;
 int G = 784;
 int R = 0;
 
-void play_tone_and_wait(NXT *nxt, int frequency, int duration) {
-    nxt->playTone(frequency, duration);
+void play_tone_and_wait(Brick *brick, int frequency, int duration) {
+    brick->playTone(frequency, duration);
     usleep(duration * 1000);
 }
 
-void play(NXT *nxt, int note) {
+void play(Brick *brick, int note) {
     if (note > 0) {
-        play_tone_and_wait(nxt, note, 500);
+        play_tone_and_wait(brick, note, 500);
     } else {
         usleep(500000);
     }
@@ -28,17 +28,17 @@ int main()
 {
     std::cout << "R2D2-NXT test project" << std::endl;
 
-    USBNXTManager usbm;
-    NXT* nxt = usbm.list()->at(0);
-    if (nxt->open()) { //initialize the NXT and continue if it succeds
-        std::cout << nxt->getName() << std::endl;
+    USBBrickManager usbm;
+    Brick* brick = usbm.list()->at(0);
+    if (brick->open()) { //initialize the NXT and continue if it succeds
+        std::cout << brick->getName() << std::endl;
 
         int song[] = {E, D, C, D, E, E, E, R,
              D, D, D, R,
              E, G, G, R, E, D, C, D, E, E, E, E, D, D, E, D, C};
 
         for(int i=0;i < 29; i++) {
-            play(nxt, song[i]);
+            play(brick, song[i]);
         }
     }
     return 0;

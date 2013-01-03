@@ -56,11 +56,11 @@ public:
     ~USBTransport();
 };
 
-class USBNXTManager : public NXTManager {
+class USBBrickManager : public BrickManager {
     static const int NXT_VENDOR_ID = 0x0694;
     static const int NXT_PRODUCT_ID = 0x0002;
 
 public:
-    std::vector<NXT *>* list();
+    std::vector<Brick *>* list();
 };
 #endif
