@@ -27,13 +27,29 @@ bool BTTransport::open() {
     return (status == 0);
 }
 
-void BTTransport::devWrite(uint8_t * buf, int buf_size) {
+void BTTransport::devWrite(bool requiresResponse, uint8_t* buf, int buf_size, uint8_t* re_buf, int re_buf_size) {
     uint8_t bf = buf_size;
     uint8_t header[] = {bf, 0x00};
     uint8_t outBuf[2 + buf_size];
     memcpy(outBuf, header, sizeof(header));
     memcpy(outBuf + 2, buf, buf_size);
     write(this->sock_, outBuf, sizeof(outBuf));
+
+    if(requiresResponse) {
+        char reply[64];
+        memset(reply, 0, sizeof(reply));
+ 
+        // read data from the client
+        int bytes_read = read(this->sock_, reply, 2);
+ 
+        if ( bytes_read > 0 ) {
+            int replylength = reply[0] + (reply[1] * 256);
+            bytes_read = read(this->sock_, reply, replylength);
+            if (bytes_read == replylength) {
+                memcpy(re_buf, reply, re_buf_size);
+            }
+        }
+    }
 }
 
 void BTTransport::devRead(uint8_t * buf, int buf_size) {
