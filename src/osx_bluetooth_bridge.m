@@ -7,7 +7,7 @@
 
 @interface Discoverer: NSObject {
 void (*func)(const BluetoothDeviceAddress *, void *);
-void *argument;
+void *context;
 }
 -(Discoverer*) initWithCallback: (void (*)(const BluetoothDeviceAddress *, void*)) f context: (void *) ctx;
 
@@ -25,7 +25,7 @@ void *argument;
 
     if (self) {
         self->func = f;
-        self->argument = ctx;
+        self->context = ctx;
     }
 
     return self;
@@ -44,7 +44,7 @@ void *argument;
 
     if (addr->data[0] == 0x00 && addr->data[1] == 0x16 && addr->data[2] == 0x53) {
         // Lego NXT found
-        func(addr, self->argument);
+        func(addr, self->context);
     }
 }
 
@@ -61,18 +61,47 @@ BOOL response;
 - (void)rfcommChannelWriteComplete:(IOBluetoothRFCOMMChannel*) channel
                             refcon:(void*)refcon
                             status:(IOReturn) error;
+@property (readonly, nonatomic) NSData *message;
 @end
 
 
-@implementation TrafficHandler
+@implementation TrafficHandler {
+NSMutableData *receivedData;
+BOOL processingMessage;
+size_t messageLength;
+}
+
 -(TrafficHandler*) initWithResponse: (BOOL)r {
     self = [super init];
 
     if (self) {
         self->response = r;
+        self->processingMessage = FALSE;
+        self->receivedData = [[NSMutableData alloc] init];
+    }
+    return self;
+}
+
+- (void)saveBuffer:(char *)dataPointer
+            length:(size_t)dataLength  {
+    if (!processingMessage) {
+        messageLength = dataPointer[0];
+        processingMessage = TRUE;
+
+        NSData *data = [NSData dataWithBytes: dataPointer length: dataLength];
+        [receivedData appendData:[data subdataWithRange:NSMakeRange(2, [data length] - 2)]];
+    } else {
+        NSData *data = [NSData dataWithBytes: dataPointer length: dataLength];
+        [receivedData appendData:data];
     }
 
-    return self;
+    if (messageLength == [receivedData length]) {
+
+        //_message = [NSData dataWithData:receivedData];
+        _message = [receivedData copy];
+        [receivedData release];
+        CFRunLoopStop( CFRunLoopGetCurrent() );
+    }
 }
 
 - (void)rfcommChannelWriteComplete:(IOBluetoothRFCOMMChannel*) channel
@@ -88,24 +117,15 @@ BOOL response;
                      data:(void *)dataPointer 
                    length:(size_t)dataLength
 {
-    // store data in a buffer
-
-    printf("received: %s\n", dataPointer);
-    //[channel closeChannel];
-    CFRunLoopStop( CFRunLoopGetCurrent() );
+    [self saveBuffer:dataPointer length:dataLength];
 }
 @end
 
 
 @interface ConnectionHandler : NSObject {
-IOBluetoothRFCOMMChannel *channel;
 }
 - (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)chan 
                            status:(IOReturn)status;
-- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)chan 
-                     data:(void *)dataPointer 
-                   length:(size_t)dataLength;
-@property (nonatomic, assign) IOBluetoothRFCOMMChannel *channel;
 @end
 
 
@@ -113,20 +133,13 @@ IOBluetoothRFCOMMChannel *channel;
 - (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)chan 
                            status:(IOReturn)status
 {
+/*
     if( kIOReturnSuccess == status ) {
         [self setChannel: channel];
     }
+*/
     CFRunLoopStop( CFRunLoopGetCurrent() );
 }
-- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)chan 
-                     data:(void *)dataPointer 
-                   length:(size_t)dataLength
-{
-    printf("received: %s\n", dataPointer);
-    [channel closeChannel];
-    CFRunLoopStop( CFRunLoopGetCurrent() );
-}
-@synthesize channel;
 @end
 
 
@@ -148,35 +161,34 @@ void r2d2_bt_scan(void (*f)(const BluetoothDeviceAddress *, void *), void *arg) 
     [pool release];
 }
 
-void *r2d2_bt_open_channel(const BluetoothDeviceAddress *addr) {
+IOBluetoothRFCOMMChannelRef r2d2_bt_open_channel(const BluetoothDeviceAddress *addr) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     IOBluetoothDevice *remote_device = 
         [IOBluetoothDevice deviceWithAddress:addr];
     IOBluetoothRFCOMMChannel *chan;
     ConnectionHandler *handler = [[ConnectionHandler alloc] init];
-
+    
     [remote_device openRFCOMMChannelAsync:&chan withChannelID:1 
                             delegate: handler];
     
     CFRunLoopRun();
 
-    [handler release];
+    IOBluetoothRFCOMMChannelRef refchan = [chan getRFCOMMChannelRef];
+//    [handler release];
     [pool release];
-    return chan;
+    return refchan;
 }
 
-void r2d2_bt_write(void *chan, char *data, size_t length, void *responseBuffer) {
-    // this method should know whether we expect a a response
-    // we can check the first byte in data
+void r2d2_bt_write(IOBluetoothRFCOMMChannelRef refchan, char *data, size_t length, void *responseBuffer, size_t *responseLength) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    BOOL response = (data[0] == 0x00 || data[0] == 0x01);
+    BOOL response = (data[2] == 0x00 || data[2] == 0x01);
 
     TrafficHandler *handler =
         [[TrafficHandler alloc] initWithResponse: response];
 
-    IOBluetoothRFCOMMChannel *channel = (IOBluetoothRFCOMMChannel *)chan;
+    IOBluetoothRFCOMMChannel *channel = [IOBluetoothRFCOMMChannel withRFCOMMChannelRef: refchan];
 
     [channel setDelegate: handler];
 
@@ -184,84 +196,14 @@ void r2d2_bt_write(void *chan, char *data, size_t length, void *responseBuffer) 
 
     CFRunLoopRun();
 
-    // store data in the responseBuffer?
-    // responseBuffer = handler.responseBuffer
+    size_t messageLength = [handler.message length];
+    unsigned char str[messageLength];
+
+    [handler.message getBytes:responseBuffer length:messageLength];
+
+    *responseLength = messageLength;
+
+    [handler.message release];
     [handler release];
     [pool release];
 }
-
-
-void r2d2_bt_read(void *chan, char *data, size_t length, void *responseBuffer) {
-    // this method should know whether we expect a a response
-    // we can check the first byte in data
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    BOOL response = (data[0] == 0x00 || data[0] == 0x01);
-
-    TrafficHandler *handler =
-        [[TrafficHandler alloc] initWithResponse: response];
-
-    IOBluetoothRFCOMMChannel *channel = (IOBluetoothRFCOMMChannel *)chan;
-
-    [channel setDelegate: handler];
-
-    [channel writeAsync: data length: length refcon: NULL];
-
-    CFRunLoopRun();
-
-    // store data in the responseBuffer?
-    // responseBuffer = handler.responseBuffer
-    [handler release];
-    [pool release];
-}
-
-
-/*
-
-
-
-
-int main( int argc, const char *argv[] ) 
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    Discoverer *d = [[Discoverer alloc] init];
-    ConnectionHandler *handler = [[ConnectionHandler alloc] init];
-
-    IOBluetoothDeviceInquiry *bdi = 
-        [[IOBluetoothDeviceInquiry alloc] init];
-    [bdi setDelegate: d];
-    
-    [bdi start];
-
-    CFRunLoopRun();
-
-    [bdi release];
-    [d release];
-    [pool release];
-    return 0;
-}
-
-int main( int argc, const char *argv[] ) 
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    NSString *addr_str = @"00:10:60:A8:95:49";
-    BluetoothDeviceAddress addr;
-    IOBluetoothNSStringToDeviceAddress( addr_str, &addr );
-    IOBluetoothDevice *remote_device = 
-        [IOBluetoothDevice withAddress:&addr];
-    IOBluetoothRFCOMMChannel *chan;
-    ConnectionHandler *handler = [[ConnectionHandler alloc] init];
-
-    [remote_device openRFCOMMChannelAsync:&chan withChannelID:1 
-                            delegate: handler];
-    
-    CFRunLoopRun();
-
-    [handler release];
-    [pool release];
-    return 0;
-}
-
-*/
