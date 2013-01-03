@@ -2,8 +2,9 @@ cmake_minimum_required (VERSION 2.8)
 project (R2D2-NXT)
 
 # Add project's CMake modules
-list(APPEND CMAKE_FIND_ROOT_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+include(CheckCXX11Features)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
@@ -17,20 +18,11 @@ if (CXX_HAS_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-# Check that the C++ compiler supports C++11, or at least C++0x
-check_cxx_compiler_flag(--std=c++0x HAS_STD_CPP0X)
-if (HAS_STD_CPP0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++0x")
-endif()
-
-check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11)
-if (HAS_STD_CPP11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
-if(NOT(HAS_STD_CPP11 OR HAS_STD_CPP0X))
+if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_NULLPTR AND HAS_CXX11_ENUM_CLASS))
     message("${PROJECT_NAME} requires a compiler that supports C++11")
     return()
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
 endif()
 
 # Set library path to ports path on Mac OSX
@@ -61,15 +53,21 @@ include_directories(${Boost_INCLUDE_DIRS})
 set(R2D2LIBS ${R2D2LIBS} ${Boost_LIBRARIES})
 
 # Require libusb-1.0
-find_package(LIBUSB REQUIRED)
-include_directories(${LIBUSB_INCLUDE_DIRS})
-set(R2D2LIBS ${R2D2LIBS} ${LIBUSB_LIBRARIES})
+find_package(LibUsb1)
+if(NOT LIBUSB1_FOUND)
+    message(FATAL_ERROR "Required library libusb-1.0 NOT FOUND.\nInstall the library (dev version) and try again.")
+endif()
+include_directories(${LIBUSB1_INCLUDE_DIRS})
+set(R2D2LIBS ${R2D2LIBS} ${LIBUSB1_LIBRARIES})
 
 # Add the Bluetooth libraries on Linux only
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    find_package(BLUETOOTH REQUIRED)
-    include_directories(${LIBBLUETOOTH_INCLUDE_DIRS})
-    set(R2D2LIBS ${R2D2LIBS} ${LIBBLUETOOTH_LIBRARIES})
+    find_package(Bluez)
+    if(NOT LIBUSB1_FOUND)
+        message(FATAL_ERROR "Required library Bluez (libbluetooth) NOT FOUND.\nInstall the library (dev version) and try again.")
+    endif()
+    include_directories(${BLUEZ_INCLUDE_DIRS})
+    set(R2D2LIBS ${R2D2LIBS} ${BLUEZ_LIBRARIES})
 endif()
 
 include_directories(include)

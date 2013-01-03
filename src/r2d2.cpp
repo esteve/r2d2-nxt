@@ -118,310 +118,34 @@ std::string Message::get_value() {
     return this->sstream_.str();
 }
 
-Motor::Motor(NXT *nxt, uint8_t port) {
-    this->nxt_ = nxt;
-    this->port_ = port;
-}
-
-void Motor::setForward(uint8_t power) {
-    Message msg(true, false);
-    msg.add_u8(Message::START_MOTOR);
-    msg.add_u8(this->port_);
-    msg.add_s8(power);
-
-    msg.add_u8(0x01 | 0x04); // UNKNOWN
-    msg.add_u8(0x01); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x20); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-
-    std::string out = msg.get_value();
-
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-}
-
-void Motor::setReverse(uint8_t power) {
-    Message msg(true, false);
-    msg.add_u8(Message::START_MOTOR);
-    msg.add_u8(this->port_);
-    msg.add_s8(-power);
-
-    msg.add_u8(0x01 | 0x04); // UNKNOWN
-    msg.add_u8(0x01); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x20); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-
-    std::string out = msg.get_value();
-
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-}
-
-void Motor::stop(bool brake) {
-    Message msg(true, false);
-    msg.add_u8(Message::STOP_MOTOR);
-    msg.add_u8(this->port_);
-    msg.add_s8(0); // power 0?
-
-    if (brake) {
-        msg.add_u8(0x01 | 0x02 | 0x04); // UNKNOWN
-        msg.add_u8(0x01); // UNKNOWN
-        msg.add_u8(0x00); // UNKNOWN
-        msg.add_u8(0x20); // UNKNOWN
-    } else {
-        msg.add_u8(0x00); // UNKNOWN
-        msg.add_u8(0x00); // UNKNOWN
-        msg.add_u8(0x00); // UNKNOWN
-        msg.add_u8(0x00); // UNKNOWN
-    }
-
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-    msg.add_u8(0x00); // UNKNOWN
-
-    std::string out = msg.get_value();
-
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-}
-
-void Motor::resetRotationCount(bool relative) {
-    Message msg(true, false);
-    msg.add_u8(Message::RESET_ROTATION_COUNT);
-    msg.add_u8(this->port_);
-    msg.add_u8(relative);
-
-    std::string out = msg.get_value();
-
-    this->nxt_->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-}
-
-
-Sensor::Sensor(NXT *nxt, uint8_t port) {
-    this->nxt_ = nxt;
-    this->port_ = port;
-}
-
-NXT* Sensor::getNXT() {
-    return this->nxt_;
-}
-
-uint8_t Sensor::getPort() {
-    return this->port_;
-}
-
-int AnalogSensor::getValue() {
-    Message msg(true, true);
-    msg.add_u8(Message::GET_VALUE);
-    msg.add_u8(this->getPort());
-
-    std::string out = msg.get_value();
-
-    unsigned char responseBuffer[16];
-
-    memset(responseBuffer, 1, sizeof(responseBuffer));
-
-    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
-
-    std::string s(responseBuffer, responseBuffer + 16);
-
-    Message response(s);
-
-    response.parse_u8(); // 2 check status
-
-    response.parse_u8(); // 3 port
-
-    response.parse_u8(); // 4 valid
-
-    response.parse_u8(); // 5 calibrated
-
-    response.parse_u8(); // 6 sensor_type
-    response.parse_u8(); // 7 sensor_mode
-    response.parse_u16(); // 8,9 raw_ad_value
-    response.parse_u16(); // 10,11 normalized_ad_value
-
-    int result = response.parse_s16(); // 12,13 scaled value
-
-    response.parse_s16(); // 14,15 calibrated value
-
-    return result;
-}
-
-int DigitalSensor::lsGetStatus(uint8_t *outbuf) {
-    Message msg(true, true);
-    msg.add_u8(Message::LS_GET_STATUS);
-    msg.add_u8(this->getPort());
-
-    std::string out = msg.get_value();
-
-    unsigned char responseBuffer[4];
-
-    memset(responseBuffer, 1, sizeof(responseBuffer));
-
-    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
-
-    std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
-
-    return static_cast<int>(responseBuffer[3]);
-}
-
-void DigitalSensor::lsRead(uint8_t *outbuf) {
-    Message msg(true, true);
-    msg.add_u8(Message::LS_READ);
-    msg.add_u8(this->getPort());
-
-    std::string out = msg.get_value();
-
-    unsigned char responseBuffer[20];
-
-    memset(responseBuffer, 1, sizeof(responseBuffer));
-
-    this->getNXT()->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
-
-    std::copy(responseBuffer, responseBuffer + sizeof(responseBuffer), outbuf);
-}
-
-void DigitalSensor::lsWrite(const std::string& indata, uint8_t *outBuf, size_t outSize) {
-    Message msg(true, true);
-    msg.add_u8(Message::LS_WRITE);
-    msg.add_u8(this->getPort());
-    msg.add_u8(indata.size());
-    msg.add_u8(outSize);
-    msg.add_string(indata.size(), indata);
-
-    std::string tosend = msg.get_value();
-
-    unsigned char responseBuffer[3];
-
-    memset(responseBuffer, 1, sizeof(responseBuffer));
-
-    this->getNXT()->sendDirectCommand(true, (int8_t *)(tosend.c_str()), tosend.size(), responseBuffer, sizeof(responseBuffer));
-
-    std::memcpy(outBuf, responseBuffer, outSize * sizeof(uint8_t));
-}
-
-
-int SonarSensor::getValue() {
-    Message msg(true, true);
-    msg.add_u8(0x02); // I2C_DEV
-    msg.add_u8(0x41); // COMMAND
-    msg.add_u8(0x02); // CONTINUOUS
-
-    std::string out = msg.get_value();
-
-    uint8_t outbuf2[66];
-    memset(outbuf2, 1, sizeof(outbuf2));
-    this->lsWrite(out, outbuf2, 0x00);
-
-    while (1) {
-        Message msg(true, true);
-        msg.add_u8(0x02); // I2C_DEV
-        msg.add_u8(0x42); // READ VALUE FROM I2C
-        std::string out2 = msg.get_value();
-
-        uint8_t outbuf3[66];
-        memset(outbuf3, 1, sizeof(outbuf3));
-        this->lsWrite(out2, outbuf3, 1);
-
-        uint8_t outbuf4[4];
-        memset(outbuf4, 1, sizeof(outbuf4));
-        this->lsGetStatus(outbuf4);
-        if (outbuf4[3] >= 1) { // 1 bytes
-            break;
-        }
-    }
-
-    uint8_t outbuf5[20];
-    memset(outbuf5, 1, sizeof(outbuf5));
-    this->lsRead(outbuf5);
-    if (outbuf5[2] == 0) {
-        return outbuf5[4];
-    } else {
-        return -1;
-    }
-}
-
-TouchSensor* NXT::makeTouch(uint8_t port) {
-    Message msg(true, false);
-    msg.add_u8(Message::SET_INPUT_MODE);
-    msg.add_u8(port);
-    msg.add_u8(Message::TOUCH);
-    msg.add_u8(Mode::BOOLEAN);
-
-    std::string out = msg.get_value();
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new TouchSensor(this, port);
-}
-
-LightSensor* NXT::makeLight(uint8_t port, bool active)
-{
-    Message msg(true, false);
-    msg.add_u8(Message::SET_INPUT_MODE);
-    msg.add_u8(port);
-
-    if(active) {
-        msg.add_u8(Message::ACTIVE_LIGHT);
-    } else {
-        msg.add_u8(Message::PASSIVE_LIGHT);
-    }
-    msg.add_u8(Mode::RAW);
-
-    std::string out = msg.get_value();
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new LightSensor(this, port);
-}
-
-
-SonarSensor* NXT::makeSonar(uint8_t port) {
-    // 0x05 -> setInputMode
-    // 0x0B -> LOWSPEED_9V
-    // 0x00 -> RAW
-    Message msg(true, false);
-    msg.add_u8(Message::SET_INPUT_MODE);
-    msg.add_u8(port);
-    msg.add_u8(Message::LOWSPEED_9V);
-    msg.add_u8(Mode::RAW);
-
-    std::string out = msg.get_value();
-    this->sendDirectCommand( false, (int8_t *)out.c_str(), out.size(), NULL, 0);
-    return new SonarSensor(this, port);
-}
-
-Motor* NXT::makeMotor(uint8_t port) {
-    return new Motor(this, port);
-}
-
-bool NXT::open() {
+bool Brick::open() {
     return this->comm_->open();
 }
 
-bool NXT::isHalted() const {
+bool Brick::isHalted() const {
     return this->halted;
 }
 
-void NXT::halt() {
+void Brick::halt() {
+    // TODO: halt brick cleanly
+    /*
     for (uint8_t port = 0; port < 3; ++port) {
         this->makeMotor(port)->stop(false);
     }
+    */
     this->halted = true;
 }
 
-double NXT::getFirmwareVersion() {
+double Brick::getFirmwareVersion() {
     uint8_t outBuf[7];
     const int min = 4, maj = 5;
 
     Message msg(false, true);
-    msg.add_u8(Message::GET_FIRMWARE_VERSION);
+    msg.add_u8(uint8_t(Opcode::GET_FIRMWARE_VERSION));
     std::string data = msg.get_value();
 
     // Send the system command to the NXT.
-    this->sendSystemCommand(true, (int8_t *)data.c_str(), data.size(), outBuf, sizeof(outBuf));
+    this->comm_->sendSystemCommand(true, (int8_t *)data.c_str(), data.size(), outBuf, sizeof(outBuf));
 
     double version = outBuf[min];
 
@@ -432,15 +156,15 @@ double NXT::getFirmwareVersion() {
     return version;
 }
 
-void NXT::getDeviceInfo(uint8_t * outBuf, size_t size) {
+void Brick::getDeviceInfo(uint8_t * outBuf, size_t size) {
     //uint8_t inBuf[] = { 0x01, 0x9B };
     int8_t inBuf[] = { static_cast<int8_t>(0x9B) };
 
     // Send the system command to the NXT.
-    this->sendSystemCommand(true, inBuf, sizeof(inBuf), outBuf, size);
+    this->comm_->sendSystemCommand(true, inBuf, sizeof(inBuf), outBuf, size);
 }
 
-std::string NXT::getName() {
+std::string Brick::getName() {
     uint8_t outBuf[33];
     char name[16];
 
@@ -455,127 +179,70 @@ std::string NXT::getName() {
     return std::string(name);
 }
 
-NXT::NXT(Comm *comm) {
+Brick::Brick(Comm *comm) {
     this->comm_ = comm;
     this->halted = false;
 }
 
-void NXT::sendSystemCommand(bool response, int8_t * dc_buf,
-                            size_t dc_buf_size, uint8_t * re_buf, size_t re_buf_size) {
-    uint8_t buf[dc_buf_size + 1];
+NXT* Brick::configure(SensorType sensor1, SensorType sensor2,
+        SensorType sensor3, SensorType sensor4,
+        MotorType motorA, MotorType motorB, MotorType motorC) {
 
-    std::copy(dc_buf, dc_buf + dc_buf_size, buf + 1);
+     if (!this->open()) {
+         // TODO raise an exception
+         return nullptr;
+     }
 
-    buf[0] = response ? 0x01 : 0x81;
+     Sensor* sensorObject1 = this->sensorFactory.makeSensor(sensor1, SensorPort::IN_1, this->comm_);
+     Sensor* sensorObject2 = this->sensorFactory.makeSensor(sensor2, SensorPort::IN_2, this->comm_);
+     Sensor* sensorObject3 = this->sensorFactory.makeSensor(sensor3, SensorPort::IN_3, this->comm_);
+     Sensor* sensorObject4 = this->sensorFactory.makeSensor(sensor4, SensorPort::IN_4, this->comm_);
 
-    this->comm_->devWrite(buf, dc_buf_size + 1);
+     Motor* motorObjectA = this->motorFactory.makeMotor(motorA, MotorPort::OUT_A, this->comm_);
+     Motor* motorObjectB = this->motorFactory.makeMotor(motorB, MotorPort::OUT_B, this->comm_);
+     Motor* motorObjectC = this->motorFactory.makeMotor(motorC, MotorPort::OUT_C, this->comm_);
 
-    if (response) {
-        unsigned char tempreadbuf[re_buf_size];
-        this->comm_->devRead(tempreadbuf, re_buf_size);
+     NXT *nxt = new NXT(this, this->comm_,
+         sensorObject1, sensorObject2, sensorObject3, sensorObject4,
+         motorObjectA, motorObjectB, motorObjectC);
 
-        std::copy(tempreadbuf + 1, tempreadbuf + re_buf_size, re_buf);
-    }
+     return nxt;
 }
 
-void NXT::sendDirectCommand(bool response, int8_t * dc_buf,
-                            size_t dc_buf_size, unsigned char * re_buf, size_t re_buf_size) {
-    uint8_t buf[dc_buf_size + 1];
+NXT::NXT(Brick *brick, Comm *comm, Sensor *sensor1, Sensor *sensor2,
+        Sensor *sensor3, Sensor *sensor4,
+        Motor *motorA, Motor *motorB, Motor *motorC) {
+     this->brick_ = brick;
 
-    std::copy(dc_buf, dc_buf + dc_buf_size, buf + 1);
+     this->comm_ = comm;
 
-    buf[0] = response ? 0x00 : 0x80;
+     this->sensorPort1 = sensor1;
+     this->sensorPort2 = sensor2;
+     this->sensorPort3 = sensor3;
+     this->sensorPort4 = sensor4;
 
-    this->comm_->devWrite(buf, dc_buf_size + 1);
-
-    if (response) {
-        this->comm_->devRead(re_buf, re_buf_size);
-    }
+     this->motorPortA = motorA;
+     this->motorPortB = motorB;
+     this->motorPortC = motorC;
 }
 
-void NXT::playTone(uint16_t frequency, uint16_t duration) {
+void Brick::playTone(uint16_t frequency, uint16_t duration) {
     Message msg(true, false);
-    msg.add_u8(Message::PLAY_TONE);
+    msg.add_u8(uint8_t(Opcode::PLAY_TONE));
 
     msg.add_u16(frequency);
     msg.add_u16(duration);
 
     std::string out = msg.get_value();
 
-    this->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
+    this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }
 
-void NXT::stopSound() {
+void Brick::stopSound() {
     Message msg(true, false);
-    msg.add_u8(Message::STOP_SOUND);
+    msg.add_u8(uint8_t(Opcode::STOP_SOUND));
 
     std::string out = msg.get_value();
 
-    this->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
-}
-
-int Motor::getRotationCount() {
-    Message msg(true, true);
-    msg.add_u8(Message::GET_ROTATION_COUNT);
-    msg.add_u8(this->port_);
-
-    std::string out = msg.get_value();
-
-    unsigned char responseBuffer[25];
-
-    memset(responseBuffer, 1, sizeof(responseBuffer));
-
-    this->nxt_->sendDirectCommand(true, (int8_t *)out.c_str(), out.size(), responseBuffer, sizeof(responseBuffer));
-
-    std::string s(responseBuffer, responseBuffer + 25);
-
-    Message response(s);
-
-/*
-    port = tgram.parse_u8() 3
-    power = tgram.parse_s8() 4
-
-    mode = tgram.parse_u8() 5
-    regulation = tgram.parse_u8() 6
-    turn_ratio = tgram.parse_s8() 7
-    run_state = tgram.parse_u8() 8
-
-    tacho_limit = tgram.parse_u32() 9,10,11,12
-    tacho_count = tgram.parse_s32() 13,14,15,16
-    block_tacho_count = tgram.parse_s32() 17,18,19,20
-    rotation_count = tgram.parse_s32() 21,22,23,24,25
-*/
-
-    response.parse_u8(); // 2 check status
-
-    response.parse_u8(); // 3 port
-
-    response.parse_s8(); // 4 power
-
-    response.parse_u8(); // 5 mode
-    response.parse_u8(); // 6 regulation
-    response.parse_s8(); // 7 turn ratio
-    response.parse_u8(); // 8 run_state
-
-    response.parse_u32(); // 9,10,11,12 tacho limit
-
-    response.parse_s32(); // 13,14,15,16 tacho count
-
-    response.parse_s32(); // 17,18,19,20 block tacho count
-
-    int tacho2 = response.parse_s32(); // 21,22,23,24 calibrated value
-
-    int i = responseBuffer[21];
-    if(i < 0)
-            i = 256 + i;
-    if(responseBuffer[23] == -1)
-            responseBuffer[23] = 0;
-    if(responseBuffer[24] == -1)
-            responseBuffer[24] = 0;
-
-    int tacho = (responseBuffer[24] << 24) + (responseBuffer[23] << 16) + (responseBuffer[22] << 8) + i;
-
-//    std::cout << "TACHO: " << (tacho == tacho2) << std::endl;
-
-    return tacho;
+    this->comm_->sendDirectCommand(false, (int8_t *)out.c_str(), out.size(), NULL, 0);  
 }

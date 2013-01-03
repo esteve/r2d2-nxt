@@ -7,13 +7,21 @@ int main()
 {
     std::cout << "R2D2-NXT test project" << std::endl;
 
-    USBNXTManager usbm;
-    NXT* nxt = usbm.list()->at(0);
+    USBBrickManager usbm;
+    Brick* brick = usbm.list()->at(0);
+
     int turnCount = 0;
-    if (nxt->open()) { //initialize the NXT and continue if it succeds
-        std::cout << nxt->getName() << std::endl;
-        Sensor* sensor = nxt->makeTouch(NXT::IN_2); //tell the NXT that the touch sensor is in port 1
-        Motor* motor = nxt->makeMotor(NXT::OUT_A);
+
+    NXT* nxt = brick->configure(SensorType::NULL_SENSOR, SensorType::TOUCH_SENSOR,
+        SensorType::NULL_SENSOR, SensorType::NULL_SENSOR, MotorType::STANDARD_MOTOR, MotorType::STANDARD_MOTOR,
+        MotorType::STANDARD_MOTOR);
+
+
+    if (nxt != nullptr) { //initialize the NXT and continue if it succeds
+
+        std::cout << brick->getName() << std::endl;
+        Sensor* sensor = nxt->sensorPort(SensorPort::IN_2); //tell the NXT that the touch sensor is in port 1
+        Motor* motor = nxt->motorPort(MotorPort::OUT_A);
         int oldCount = motor->getRotationCount();
         while (1) { //main loop
             if (sensor->getValue() == true) //if the touch sensor is pressed down...

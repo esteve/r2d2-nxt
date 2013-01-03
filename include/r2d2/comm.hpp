@@ -17,35 +17,28 @@
  * under the License.
  */
 
-#ifndef R2D2_BLUETOOTH_HPP
-#define R2D2_BLUETOOTH_HPP
-#include <vector>
-#include <r2d2.hpp>
+#ifndef R2D2_COMM_HPP
+#define R2D2_COMM_HPP
 
-#define NXT_BLUETOOTH_ADDRESS "00:16:53"
+#include <cstdint>
 
-class BTTransport : public Transport {
-private:
-    void *addr_; // this is actually a pointer to a struct sockaddr_rc
-    int sock_;
+class Transport {
 public:
-    BTTransport(void *addr);
-    ~BTTransport();
+    virtual void devWrite(uint8_t *, int) = 0;
+    virtual void devRead(unsigned char *, int) = 0;
+    virtual bool open() = 0;
+};
+
+class Comm {
+private:
+    Transport *transport_;
+public:
+    Comm(Transport *transport) : transport_(transport) {}
+
+    void sendSystemCommand(bool, int8_t *, size_t, uint8_t *, size_t);
+
+    void sendDirectCommand(bool, int8_t *, size_t, unsigned char *, size_t);
 
     bool open();
-
-    void devWrite(uint8_t *buf, int buf_size);
-
-    void devRead(uint8_t *buf, int buf_size);
 };
-
-class BTBrickManager : public BrickManager {
-    static const int NXT_VENDOR_ID = 0x0694;
-    static const int NXT_PRODUCT_ID = 0x0002;
-
-public:
-    std::vector<Brick *>* list();
-};
-
-void addBTDeviceToList(void *addr, void *arg);
 #endif
