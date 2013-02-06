@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 
 #include <r2d2.hpp>
 #include <r2d2/bluetooth.hpp>
