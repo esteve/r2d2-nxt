@@ -16,6 +16,7 @@
 #  HAS_CXX11_LAMBDA             - lambdas
 #  HAS_CXX11_LIB_REGEX          - regex library
 #  HAS_CXX11_LONG_LONG          - long long signed & unsigned types
+#  HAS_CXX11_MUTEX              - std::mutex
 #  HAS_CXX11_NULLPTR            - nullptr
 #  HAS_CXX11_RVALUE_REFERENCES  - rvalue references
 #  HAS_CXX11_SIZEOF_MEMBER      - sizeof() non-static members
@@ -133,6 +134,7 @@ cxx11_check_feature("initializer_list" HAS_CXX11_INITIALIZER_LIST)
 cxx11_check_feature("lambda" HAS_CXX11_LAMBDA)
 cxx11_check_feature("long_long" HAS_CXX11_LONG_LONG)
 cxx11_check_feature("nullptr" HAS_CXX11_NULLPTR)
+cxx11_check_feature("mutex" HAS_CXX11_MUTEX)
 cxx11_check_feature("regex" HAS_CXX11_LIB_REGEX)
 cxx11_check_feature("rvalue-references" HAS_CXX11_RVALUE_REFERENCES)
 cxx11_check_feature("sizeof_member" HAS_CXX11_SIZEOF_MEMBER)

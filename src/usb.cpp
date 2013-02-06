@@ -1,9 +1,9 @@
-#include <r2d2/usb.hpp>
-
-#include <sstream>
-#include <boost/format.hpp>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <mutex>
+#include <sstream>
+
+#include <r2d2/usb.hpp>
 
 bool USBTransport::open() {
 
@@ -41,7 +41,7 @@ bool USBTransport::open() {
 }
 
 void USBTransport::devWrite(bool requiresResponse, uint8_t * buf, int buf_size, unsigned char * re_buf, int re_buf_size) {
-    boost::mutex::scoped_lock lock(this->io_mutex);
+    std::lock_guard<std::mutex> lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
         int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpIn_, buf, buf_size, &actual_length, TIMEOUT);
@@ -68,7 +68,7 @@ void USBTransport::devWrite(bool requiresResponse, uint8_t * buf, int buf_size, 
 }
 
 void USBTransport::devRead(unsigned char * buf, int buf_size) {
-    boost::mutex::scoped_lock lock(this->io_mutex);
+    std::lock_guard<std::mutex> lock(this->io_mutex);
     if (this->pUSBHandle_) {
         int actual_length;
         int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpOut_, buf, buf_size, &actual_length, TIMEOUT);

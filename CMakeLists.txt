@@ -18,7 +18,7 @@ if (CXX_HAS_WALL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
-if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_NULLPTR AND HAS_CXX11_ENUM_CLASS))
+if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_NULLPTR AND HAS_CXX11_ENUM_CLASS AND HAS_CXX11_MUTEX))
     message("${PROJECT_NAME} requires a compiler that supports C++11")
     return()
 else()
@@ -41,24 +41,6 @@ SET_SOURCE_FILES_PROPERTIES(
     "*.cpp"
     PROPERTIES
         COMPILE_FLAGS ${CXX11_COMPILER_FLAGS})
-
-# Mac OSX requires boost.system
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    find_package(Boost COMPONENTS thread system REQUIRED)
-else()
-    find_package(Boost COMPONENTS thread REQUIRED)
-endif()
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    # Work around Boost bug #7671 (https://svn.boost.org/trac/boost/ticket/7671)
-    if(${Boost_VERSION} STREQUAL "105200")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_NO_CXX11_NUMERIC_LIMITS")
-    endif()
-endif()
-
-# Require Boost
-include_directories(${Boost_INCLUDE_DIRS})
-set(R2D2LIBS ${R2D2LIBS} ${Boost_LIBRARIES})
 
 # Require libusb-1.0
 find_package(LibUsb1)
