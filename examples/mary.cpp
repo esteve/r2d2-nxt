@@ -3,7 +3,8 @@
 #include <r2d2.hpp>
 #include <r2d2/usb.hpp>
 
-#include <ctime>
+#include <thread>
+#include <chrono>
 
 int C = 523;
 int D = 587;
@@ -13,14 +14,16 @@ int R = 0;
 
 void play_tone_and_wait(Brick *brick, int frequency, int duration) {
     brick->playTone(frequency, duration);
-    usleep(duration * 1000);
+    std::chrono::milliseconds dura(duration);
+    std::this_thread::sleep_for(dura);
 }
 
 void play(Brick *brick, int note) {
     if (note > 0) {
         play_tone_and_wait(brick, note, 500);
     } else {
-        usleep(500000);
+        std::chrono::milliseconds dura(500);
+        std::this_thread::sleep_for(dura);
     }
 }
 
