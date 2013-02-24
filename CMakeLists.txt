@@ -19,12 +19,12 @@ if (CXX_HAS_WALL)
 endif()
 
 if(NOT(HAS_CXX11_CSTDINT_H AND HAS_CXX11_NULLPTR AND HAS_CXX11_ENUM_CLASS AND HAS_CXX11_MUTEX))
-    message("${PROJECT_NAME} requires a compiler that supports C++11")
+    message("${PROJECT_NAME} requires a compiler that supports the following C++11 features:")
+    message("cstdint header")
+    message("nullptr")
+    message("enum class")
+    message("mutex")
     return()
-else()
-
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
-
 endif()
 
 # Set library path to ports path on Mac OSX
