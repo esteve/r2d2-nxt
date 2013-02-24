@@ -47,6 +47,8 @@ cmake_minimum_required(VERSION 2.8.3)
 #
 ### Check for needed compiler flags
 #
+SET(CHECK_CXX11_OLD_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" _HAS_CXX11_FLAG)
 if (NOT _HAS_CXX11_FLAG)
@@ -64,6 +66,8 @@ if (_HAS_CLANG_LIBCXX_FLAG)
     set(CXX11_COMPILER_FLAGS "${CXX11_COMPILER_FLAGS} -stdlib=libc++")
 endif()
 
+set(CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS}")
+
 function(cxx11_check_feature FEATURE_NAME RESULT_VAR)
     if (NOT DEFINED ${RESULT_VAR})
         set(_bindir "${CMAKE_CURRENT_BINARY_DIR}/cxx11_${FEATURE_NAME}")
@@ -77,16 +81,13 @@ function(cxx11_check_feature FEATURE_NAME RESULT_VAR)
         set(_SRCFILE_FAIL_COMPILE "${_SRCFILE_BASE}_fail_compile.cpp")
 
         if (CROSS_COMPILING)
-            try_compile(${RESULT_VAR} "${_bindir}" "${_SRCFILE}"
-                        COMPILE_DEFINITIONS "${CXX11_COMPILER_FLAGS}")
+            try_compile(${RESULT_VAR} "${_bindir}" "${_SRCFILE}")
             if (${RESULT_VAR} AND EXISTS ${_SRCFILE_FAIL})
-                try_compile(${RESULT_VAR} "${_bindir}_fail" "${_SRCFILE_FAIL}"
-                            COMPILE_DEFINITIONS "${CXX11_COMPILER_FLAGS}")
+                try_compile(${RESULT_VAR} "${_bindir}_fail" "${_SRCFILE_FAIL}")
             endif (${RESULT_VAR} AND EXISTS ${_SRCFILE_FAIL})
         else (CROSS_COMPILING)
             try_run(_RUN_RESULT_VAR _COMPILE_RESULT_VAR
-                    "${_bindir}" "${_SRCFILE}"
-                    COMPILE_DEFINITIONS "${CXX11_COMPILER_FLAGS}")
+                    "${_bindir}" "${_SRCFILE}")
             if (_COMPILE_RESULT_VAR AND NOT _RUN_RESULT_VAR)
                 set(${RESULT_VAR} TRUE)
             else (_COMPILE_RESULT_VAR AND NOT _RUN_RESULT_VAR)
@@ -94,8 +95,7 @@ function(cxx11_check_feature FEATURE_NAME RESULT_VAR)
             endif (_COMPILE_RESULT_VAR AND NOT _RUN_RESULT_VAR)
             if (${RESULT_VAR} AND EXISTS ${_SRCFILE_FAIL})
                 try_run(_RUN_RESULT_VAR _COMPILE_RESULT_VAR
-                        "${_bindir}_fail" "${_SRCFILE_FAIL}"
-                         COMPILE_DEFINITIONS "${CXX11_COMPILER_FLAGS}")
+                        "${_bindir}_fail" "${_SRCFILE_FAIL}")
                 if (_COMPILE_RESULT_VAR AND _RUN_RESULT_VAR)
                     set(${RESULT_VAR} TRUE)
                 else (_COMPILE_RESULT_VAR AND _RUN_RESULT_VAR)
@@ -104,8 +104,7 @@ function(cxx11_check_feature FEATURE_NAME RESULT_VAR)
             endif (${RESULT_VAR} AND EXISTS ${_SRCFILE_FAIL})
         endif (CROSS_COMPILING)
         if (${RESULT_VAR} AND EXISTS ${_SRCFILE_FAIL_COMPILE})
-            try_compile(_TMP_RESULT "${_bindir}_fail_compile" "${_SRCFILE_FAIL_COMPILE}"
-                        COMPILE_DEFINITIONS "${CXX11_COMPILER_FLAGS}")
+            try_compile(_TMP_RESULT "${_bindir}_fail_compile" "${_SRCFILE_FAIL_COMPILE}")
             if (_TMP_RESULT)
                 set(${RESULT_VAR} FALSE)
             else (_TMP_RESULT)
@@ -140,3 +139,6 @@ cxx11_check_feature("rvalue-references" HAS_CXX11_RVALUE_REFERENCES)
 cxx11_check_feature("sizeof_member" HAS_CXX11_SIZEOF_MEMBER)
 cxx11_check_feature("static_assert" HAS_CXX11_STATIC_ASSERT)
 cxx11_check_feature("variadic_templates" HAS_CXX11_VARIADIC_TEMPLATES)
+
+SET(CMAKE_CXX_FLAGS ${CHECK_CXX11_OLD_CMAKE_CXX_FLAGS})
+UNSET(CHECK_CXX11_OLD_CMAKE_CXX_FLAGS)
