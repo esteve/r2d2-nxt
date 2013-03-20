@@ -56,7 +56,9 @@ enum class Opcode : uint8_t {
 
     GET_FIRMWARE_VERSION = 0x88,
 
-    GET_DEVICE_INFO = 0x9B
+    GET_DEVICE_INFO = 0x9B,
+
+    SET_NAME = 0x98
 };
 
 class Message {
@@ -131,6 +133,8 @@ public:
 
     void playTone(uint16_t frequency, uint16_t duration);
     void stopSound();
+
+    void setName(const std::string&);
 
     NXT* configure(SensorType sensor1, SensorType sensor2,
         SensorType sensor3, SensorType sensor4,
