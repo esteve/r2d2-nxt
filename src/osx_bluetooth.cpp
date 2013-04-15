@@ -38,9 +38,6 @@ void BTTransport::devWrite(bool requiresResponse, uint8_t * buf, int buf_size, u
     r2d2_bt_write(this->rfcommChannelRef_, outBuf, sizeof(outBuf), re_buf, &actual_re_buf_size);
 }
 
-void BTTransport::devRead(uint8_t * buf, int buf_size) {
-}
-
 std::vector<Brick *>* BTBrickManager::list() {
 
     // List all the NXT devices

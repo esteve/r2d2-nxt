@@ -29,6 +29,7 @@ bool BTTransport::open() {
 }
 
 void BTTransport::devWrite(bool requiresResponse, uint8_t* buf, int buf_size, uint8_t* re_buf, int re_buf_size) {
+    // Write the message length in the header
     uint8_t bf = buf_size;
     uint8_t header[] = {bf, 0x00};
     uint8_t outBuf[2 + buf_size];
@@ -37,6 +38,9 @@ void BTTransport::devWrite(bool requiresResponse, uint8_t* buf, int buf_size, ui
     write(this->sock_, outBuf, sizeof(outBuf));
 
     if(requiresResponse) {
+        // The Bluetooth transport starts with a header with the length
+        // of the messages
+ 
         char reply[64];
         memset(reply, 0, sizeof(reply));
  
@@ -49,22 +53,6 @@ void BTTransport::devWrite(bool requiresResponse, uint8_t* buf, int buf_size, ui
             if (bytes_read == replylength) {
                 memcpy(re_buf, reply, re_buf_size);
             }
-        }
-    }
-}
-
-void BTTransport::devRead(uint8_t * buf, int buf_size) {
-    char reply[64];
-    memset(reply, 0, sizeof(reply));
-
-    // read data from the client
-    int bytes_read = read(this->sock_, reply, 2);
-
-    if ( bytes_read > 0 ) {
-        int replylength = reply[0] + (reply[1] * 256);
-        bytes_read = read(this->sock_, reply, replylength);
-        if (bytes_read == replylength) {
-            memcpy(buf, reply, buf_size);
         }
     }
 }
