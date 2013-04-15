@@ -22,3 +22,6 @@ target_link_libraries(r2d2shared ${R2D2LIBS})
 
 set_target_properties(r2d2static PROPERTIES OUTPUT_NAME r2d2)
 set_target_properties(r2d2shared PROPERTIES OUTPUT_NAME r2d2)
+
+install(TARGETS r2d2shared LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS r2d2static ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)

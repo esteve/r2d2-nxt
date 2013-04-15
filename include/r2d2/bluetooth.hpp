@@ -20,7 +20,7 @@
 #ifndef R2D2_BLUETOOTH_HPP
 #define R2D2_BLUETOOTH_HPP
 #include <vector>
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 
 class BTBrickManager : public BrickManager {
     static const int NXT_VENDOR_ID = 0x0694;

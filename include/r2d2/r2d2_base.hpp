@@ -17,6 +17,30 @@
  * under the License.
  */
 
+/**
+ \mainpage R2D2-NXT
+ 
+ \section intro_sec Introduction
+ 
+ r2d2-nxt is a C++ library for programming Lego NXT robots using either the USB or the Bluetooth interfaces. It supports
+ Linux, Microsoft Windows (tested on 7) and Mac OS X.
+
+ \section requirements Requirements
+
+ CMake (http://cmake.org) is required for building from sources. r2d2-nxt uses certain C++11 features, so you'll need a relatively recent C++ compiler.
+ r2d2-nxt has been tested on the following platforms:
+
+ - GCC 4.6 on Linux
+ - Clang 3.2 on Linux
+ - Clang 4.2 on Mac OSX
+ - MSVC 10.0 on Microsoft Windows 7.
+
+ \section install_sec Installation
+
+ Run <tt>cmake .</tt> to generate the build rules for your platform (make on Linux and Mac OSX, nmake on Windows), afterwards you may use <tt>make install</tt>
+ on Linux and Mac OSX, or <tt>nmake install</tt> on Microsoft Windows, to install r2d2-nxt to its proper location. You can configure the destination path
+ (\c CMAKE_INSTALL_PREFIX) with <tt>ccmake .</tt> or <tt>cmake-gui</tt>
+*/
 #ifndef R2D2_HPP
 #define R2D2_HPP
 

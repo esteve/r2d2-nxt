@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 
 Message::Message(bool isDirect, bool requiresResponse) {
     this->isDirect_ = isDirect;

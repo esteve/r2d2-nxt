@@ -20,7 +20,7 @@
 #ifndef R2D2_OSX_BLUETOOTH_HPP
 #define R2D2_OSX_BLUETOOTH_HPP
 #include <vector>
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOBluetooth/Bluetooth.h>
 #include <IOBluetooth/IOBluetoothUserLib.h>

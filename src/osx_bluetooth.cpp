@@ -1,6 +1,6 @@
 #include <vector>
 #include <cstring>
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 #include <r2d2/bluetooth.hpp>
 #include <r2d2/osx_bluetooth.hpp>
 #include <r2d2/osx_bluetooth_bridge.h>

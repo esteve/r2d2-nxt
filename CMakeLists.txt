@@ -76,3 +76,6 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 COMMENT "Generating API documentation with Doxygen" VERBATIM
 )
 endif(DOXYGEN_FOUND)
+
+install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_PREFIX}/include"
+          FILES_MATCHING PATTERN "*.hpp")

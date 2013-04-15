@@ -20,7 +20,7 @@
 #ifndef R2D2_LINUX_BLUETOOTH_HPP
 #define R2D2_LINUX_BLUETOOTH_HPP
 #include <vector>
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
