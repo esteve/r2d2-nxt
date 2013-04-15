@@ -35,8 +35,6 @@ public:
     bool open();
 
     void devWrite(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size);
-
-    void devRead(uint8_t *buf, int buf_size);
 };
 
 void addBTDeviceToList(void *addr, void *arg);

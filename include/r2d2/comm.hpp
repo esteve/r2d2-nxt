@@ -28,7 +28,6 @@ class Message;
 class Transport {
 public:
     virtual void devWrite(bool, uint8_t *, int, unsigned char *, int) = 0;
-    virtual void devRead(unsigned char *, int) = 0;
     virtual bool open() = 0;
 };
 

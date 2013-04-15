@@ -105,8 +105,19 @@ public:
     int8_t parse_s8();
 };
 
+/**
+A configured NXT brick, with the sensors and motors layout already set up.
+*/
 class NXT;
 
+/**
+An unconfigured NXT brick, without any sensors or motors attached.
+ 
+An unconfigured NXT brick can issue system commands such as Brick::getFirmware
+or Brick::getDeviceInfo, but it doesn't have any sensors or motors attached,
+instead use Brick::configure to setup an NXT layout.
+ 
+*/
 class Brick {
 private:
     Comm *comm_;
@@ -117,21 +128,74 @@ private:
 public:
     Brick(Comm *comm);
 
+    /**
+    Open the underlying transport.
+ 
+    @return A bool whether the transport was successfully opened.
+    */
     bool open();
 
+    /**
+    Obtain the NXT brick name.
+ 
+    @return std::string A std::string with the name of the NXT brick.
+    */
     std::string getName();
 
+    /**
+    Obtain the NXT firmware version.
+ 
+    @return A double with the firmware version of the NXT brick.
+    */ 
     double getFirmwareVersion();
 
+    /**
+    Obtain information about the NXT brick.
+ 
+    @param uint8_t* A uint8_t* buffer to store the device information.
+    @param size_t A size_t with the size of the buffer.
+    */
     void getDeviceInfo(uint8_t*, size_t);
 
+    /**
+    Stop all motors, use it to guarantee that the brick will be in a safe
+    state.
+    */
     void halt();
 
+    /**
+    Whether the NXT brick is stopped.
+
+    @return A bool with whether the NXT is stopped.
+    */
     bool isHalted() const;
 
+    /**
+    Make the NXT brick play a sound.
+
+    @param frequency The frequency in Hz to play in the NXT brick.
+    @param duration The duration in milliseconds to play the tone.
+    */
     void playTone(uint16_t frequency, uint16_t duration);
+
+    /**
+    Interrupt any sound currently playing in the NXT brick.
+    */ 
     void stopSound();
 
+    /**
+    Configure a Brick with a Sensor and Motor layout.
+
+    @param sensor1 The Sensor in the port 1.
+    @param sensor2 The Sensor in the port 2.
+    @param sensor3 The Sensor in the port 3.
+    @param sensor4 The Sensor in the port 4.
+    @param motorA The Motor in the port A.
+    @param motorB The Motor in the port B.
+    @param motorC The Motor in the port C.
+
+    @return A fully configured NXT object.
+    */
     NXT* configure(SensorType sensor1, SensorType sensor2,
         SensorType sensor3, SensorType sensor4,
         MotorType motorA, MotorType motorB, MotorType motorC);
@@ -155,6 +219,12 @@ public:
 
     NXT(Brick *, Comm *, Sensor *, Sensor *, Sensor *, Sensor *, Motor *, Motor *, Motor *);
 
+    /**
+    Return the Sensor object at the given port.
+
+    @param port One of the SensorPort enum values.
+    @return A Sensor instance.
+    */
     Sensor * sensorPort(SensorPort port) {
         switch(port) {
             case SensorPort::IN_1:
@@ -173,6 +243,12 @@ public:
         }
     };
 
+    /**
+    Return the Motor object at the given port.
+
+    @param port One of the MotorPort enum values.
+    @return A Motor instance.
+    */ 
     Motor *motorPort(MotorPort port) {
         switch(port) {
             case MotorPort::OUT_A:
@@ -188,22 +264,49 @@ public:
         }
     };
 
+    /**
+    @see Brick::getName()
+    */
     std::string getName();
 
+    /**
+    @see Brick::getName()
+    */
     double getFirmwareVersion();
 
+    /**
+    @see Brick::getDeviceInfo()
+    */
     void getDeviceInfo(uint8_t*, size_t);
 
+    /**
+    @see Brick::halt()
+    */ 
     void halt();
 
+    /**
+    @see Brick::isHalted()
+    */
     bool isHalted() const;
 
+    /**
+    @see Brick::playTone()
+    */
     void playTone(uint16_t frequency, uint16_t duration);
+
+    /**
+    @see Brick::stopSound()
+    */
     void stopSound();
 };
 
 class BrickManager {
 public:
+    /**
+    Find all the NXT bricks in the underlying transport.
+
+    @return A std::vector of Brick.
+    */
     virtual std::vector<Brick *>* list() = 0;
 };
 #endif
