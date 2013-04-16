@@ -25,6 +25,7 @@
 #include <IOBluetooth/Bluetooth.h>
 #include <IOBluetooth/IOBluetoothUserLib.h>
 
+namespace r2d2 {
 class BTTransport : public Transport {
 private:
     const BluetoothDeviceAddress *addr_;
@@ -39,4 +40,5 @@ public:
 };
 
 void addBTDeviceToList(const BluetoothDeviceAddress *addr, void *arg);
+}
 #endif

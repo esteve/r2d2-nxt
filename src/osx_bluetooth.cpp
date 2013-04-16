@@ -5,6 +5,7 @@
 #include <r2d2/osx_bluetooth.hpp>
 #include <r2d2/osx_bluetooth_bridge.h>
 
+namespace r2d2 {
 BTTransport::BTTransport(const BluetoothDeviceAddress *addr) {
     this->addr_ = addr;
 }
@@ -46,4 +47,5 @@ std::vector<Brick *>* BTBrickManager::list() {
     r2d2_bt_scan(addBTDeviceToList, v);
 
     return v;
+}
 }
