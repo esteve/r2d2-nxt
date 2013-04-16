@@ -1,0 +1,6 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$classr2d2_1_1ActiveLightSensor.html" title="r2d2::ActiveLightSensor" alt="" coords="5,160,165,189"/>
+<area shape="rect" id="node7" href="$classr2d2_1_1PassiveLightSensor.html" title="r2d2::PassiveLightSensor" alt="" coords="189,160,360,189"/>
+<area shape="rect" id="node9" href="$classr2d2_1_1TouchSensor.html" title="r2d2::TouchSensor" alt="" coords="384,160,515,189"/>
+<area shape="rect" id="node2" href="$classr2d2_1_1Sensor.html" title="r2d2::Sensor" alt="" coords="227,5,323,35"/>
+</map>
