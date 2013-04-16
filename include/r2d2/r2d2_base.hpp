@@ -41,8 +41,8 @@
  on Linux and Mac OSX, or <tt>nmake install</tt> on Microsoft Windows, to install r2d2-nxt to its proper location. You can configure the destination path
  (\c CMAKE_INSTALL_PREFIX) with <tt>ccmake .</tt> or <tt>cmake-gui</tt>
 */
-#ifndef R2D2_HPP
-#define R2D2_HPP
+#ifndef R2D2_BASE_HPP
+#define R2D2_BASE_HPP
 
 #include <cstdint>
 #include <sstream>
@@ -53,6 +53,9 @@
 #include <r2d2/sensors.hpp>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
+
+//! R2D2-NXT namespace
+namespace r2d2 {
 
 enum class Opcode : uint8_t {
     SET_INPUT_MODE = 0x05,
@@ -333,4 +336,5 @@ public:
     */
     virtual std::vector<Brick *>* list() = 0;
 };
+}
 #endif

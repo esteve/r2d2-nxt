@@ -5,6 +5,8 @@
 
 #include <r2d2/usb.hpp>
 
+namespace r2d2 {
+
 bool USBTransport::open() {
 
     int nEp = 0;
@@ -151,4 +153,5 @@ std::vector<Brick *>* USBBrickManager::list() {
     libusb_free_device_list(devs, 1); //free the list, unref the devices in it
 //        libusb_exit(ctx); //close the session
     return v;
+}
 }

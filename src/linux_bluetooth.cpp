@@ -5,6 +5,7 @@
 #include <r2d2/linux_bluetooth.hpp>
 #include <r2d2/linux_bluetooth_bridge.h>
 
+namespace r2d2 {
 BTTransport::BTTransport(void *addr) {
     this->addr_ = addr;
     // this is actually a pointer to a struct sockaddr_rc
@@ -65,4 +66,5 @@ std::vector<Brick *>* BTBrickManager::list() {
     r2d2_bt_scan(addBTDeviceToList, v);
 
     return v;
+}
 }

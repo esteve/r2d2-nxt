@@ -5,6 +5,8 @@
 
 #include <r2d2/r2d2_base.hpp>
 
+namespace r2d2 {
+
 Message::Message(bool isDirect, bool requiresResponse) {
     this->isDirect_ = isDirect;
     this->requiresResponse_ = requiresResponse;
@@ -244,4 +246,5 @@ void Brick::stopSound() {
     Message msg(true, false);
     msg.add_u8(uint8_t(Opcode::STOP_SOUND));
     this->comm_->sendMessage(msg, NULL, 0);
+}
 }

@@ -22,6 +22,7 @@
 #include <vector>
 #include <r2d2/r2d2_base.hpp>
 
+namespace r2d2 {
 class BTBrickManager : public BrickManager {
     static const int NXT_VENDOR_ID = 0x0694;
     static const int NXT_PRODUCT_ID = 0x0002;
@@ -29,4 +30,5 @@ class BTBrickManager : public BrickManager {
 public:
     std::vector<Brick *>* list();
 };
+}
 #endif

@@ -7,21 +7,21 @@ int main()
 {
     std::cout << "R2D2-NXT test project" << std::endl;
 
-    BTBrickManager btm;
-    Brick* brick = btm.list()->at(0);
+    r2d2::BTBrickManager btm;
+    r2d2::Brick* brick = btm.list()->at(0);
 
     int turnCount = 0;
 
-    NXT* nxt = brick->configure(SensorType::NULL_SENSOR, SensorType::TOUCH_SENSOR,
-        SensorType::NULL_SENSOR, SensorType::NULL_SENSOR, MotorType::STANDARD_MOTOR, MotorType::STANDARD_MOTOR,
-        MotorType::STANDARD_MOTOR);
+    r2d2::NXT* nxt = brick->configure(r2d2::SensorType::NULL_SENSOR, r2d2::SensorType::TOUCH_SENSOR,
+        r2d2::SensorType::NULL_SENSOR, r2d2::SensorType::NULL_SENSOR, r2d2::MotorType::STANDARD_MOTOR,
+        r2d2::MotorType::STANDARD_MOTOR, r2d2::MotorType::STANDARD_MOTOR);
 
 
     if (nxt != nullptr) { //initialize the NXT and continue if it succeds
 
         std::cout << brick->getName() << std::endl;
-        Sensor* sensor = nxt->sensorPort(SensorPort::IN_2); //tell the NXT that the touch sensor is in port 1
-        Motor* motor = nxt->motorPort(MotorPort::OUT_A);
+        r2d2::Sensor* sensor = nxt->sensorPort(r2d2::SensorPort::IN_2); //tell the NXT that the touch sensor is in port 1
+        r2d2::Motor* motor = nxt->motorPort(r2d2::MotorPort::OUT_A);
         int oldCount = motor->getRotationCount();
         while (1) { //main loop
             if (sensor->getValue() == true) //if the touch sensor is pressed down...

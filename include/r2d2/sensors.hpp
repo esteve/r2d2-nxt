@@ -24,6 +24,7 @@
 
 #include <r2d2/comm.hpp>
 
+namespace r2d2 {
 class LSMessage {
 private:
     std::stringstream sstream_;
@@ -125,4 +126,5 @@ public:
     SonarSensor(Comm *comm, SensorPort port) : DigitalSensor(comm, port) { };
     int getValue();
 };
+}
 #endif

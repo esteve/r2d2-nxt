@@ -31,6 +31,7 @@
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
+namespace r2d2 {
 class USBTransport : public Transport {
 private:
     libusb_device *usb_dev_;
@@ -61,4 +62,5 @@ class USBBrickManager : public BrickManager {
 public:
     std::vector<Brick *>* list();
 };
+}
 #endif

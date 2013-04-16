@@ -12,13 +12,13 @@ int E = 659;
 int G = 784;
 int R = 0;
 
-void play_tone_and_wait(Brick *brick, int frequency, int duration) {
+void play_tone_and_wait(r2d2::Brick *brick, int frequency, int duration) {
     brick->playTone(frequency, duration);
     std::chrono::milliseconds dura(duration);
     std::this_thread::sleep_for(dura);
 }
 
-void play(Brick *brick, int note) {
+void play(r2d2::Brick *brick, int note) {
     if (note > 0) {
         play_tone_and_wait(brick, note, 500);
     } else {
@@ -31,8 +31,8 @@ int main()
 {
     std::cout << "R2D2-NXT test project" << std::endl;
 
-    USBBrickManager usbm;
-    Brick* brick = usbm.list()->at(0);
+    r2d2::USBBrickManager usbm;
+    r2d2::Brick* brick = usbm.list()->at(0);
     if (brick->open()) { //initialize the NXT and continue if it succeds
         std::cout << brick->getName() << std::endl;
 

@@ -9,7 +9,7 @@
 #include <r2d2/usb.hpp>
 #include <r2d2/bluetooth.hpp>
 
-NXT *nxt = nullptr;
+r2d2::NXT *nxt = nullptr;
 
 void r2d2_usleep(int milliseconds) {
     std::chrono::milliseconds duration(milliseconds);
@@ -24,22 +24,22 @@ private:
 
     // We define where the motors and the sensors are so that the code is more
     // readable later
-    static const MotorPort RIGHT_MOTOR = MotorPort::OUT_B;
-    static const MotorPort LEFT_MOTOR = MotorPort::OUT_C;
+    static const r2d2::MotorPort RIGHT_MOTOR = r2d2::MotorPort::OUT_B;
+    static const r2d2::MotorPort LEFT_MOTOR = r2d2::MotorPort::OUT_C;
 
-    static const SensorPort RIGHT_TOUCH_SENSOR = SensorPort::IN_1;
-    static const SensorPort LEFT_TOUCH_SENSOR = SensorPort::IN_2;
+    static const r2d2::SensorPort RIGHT_TOUCH_SENSOR = r2d2::SensorPort::IN_1;
+    static const r2d2::SensorPort LEFT_TOUCH_SENSOR = r2d2::SensorPort::IN_2;
 
-    static const SensorPort SONAR_SENSOR = SensorPort::IN_3;
+    static const r2d2::SensorPort SONAR_SENSOR = r2d2::SensorPort::IN_3;
 
 public:
     Task2() {
-        BTBrickManager bm;
-        Brick* brick = bm.list()->at(0);
+        r2d2::BTBrickManager bm;
+        r2d2::Brick* brick = bm.list()->at(0);
 
-        nxt = brick->configure(SensorType::TOUCH_SENSOR, SensorType::TOUCH_SENSOR,
-        SensorType::SONAR_SENSOR, SensorType::NULL_SENSOR, MotorType::STANDARD_MOTOR, MotorType::STANDARD_MOTOR,
-        MotorType::STANDARD_MOTOR);
+        nxt = brick->configure(r2d2::SensorType::TOUCH_SENSOR, r2d2::SensorType::TOUCH_SENSOR,
+        r2d2::SensorType::SONAR_SENSOR, r2d2::SensorType::NULL_SENSOR, r2d2::MotorType::STANDARD_MOTOR,
+        r2d2::MotorType::STANDARD_MOTOR, r2d2::MotorType::STANDARD_MOTOR);
     }
 
     void setLeftSpin() {
@@ -127,9 +127,9 @@ public:
 void signal_callback_handler(int signum) {
     // Ensure that all motors are stopped
     if(nxt != nullptr) {
-        nxt->motorPort(MotorPort::OUT_A)->stop(false);
-        nxt->motorPort(MotorPort::OUT_B)->stop(false);
-        nxt->motorPort(MotorPort::OUT_C)->stop(false);
+        nxt->motorPort(r2d2::MotorPort::OUT_A)->stop(false);
+        nxt->motorPort(r2d2::MotorPort::OUT_B)->stop(false);
+        nxt->motorPort(r2d2::MotorPort::OUT_C)->stop(false);
     }
 
     std::cout << "EXITING NXT++ afraidOfProximity project" << std::endl;

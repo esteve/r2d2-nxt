@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-
+namespace r2d2 {
 void LSMessage::add_u8(uint8_t v) {
     this->sstream_ << v;
 }
@@ -183,4 +183,5 @@ Sensor * SensorFactory::makeSensor(SensorType type, SensorPort port, Comm *comm)
     }
 
     return sensor;
+}
 }

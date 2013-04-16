@@ -3,6 +3,7 @@
 
 #include <cstring>
 
+namespace r2d2 {
 StandardMotor::StandardMotor(Comm *comm, MotorPort port) {
     this->comm_ = comm;
     this->port_ = port;
@@ -157,4 +158,5 @@ int StandardMotor::getRotationCount() {
 //    std::cout << "TACHO: " << (tacho == tacho2) << std::endl;
 
     return tacho;
+}
 }

@@ -22,6 +22,7 @@
 
 #include <cstdint>
 
+namespace r2d2 {
 // XXX FIX FORWARD DECLARATION
 class Message;
 
@@ -41,4 +42,5 @@ public:
 
     bool open();
 };
+}
 #endif
