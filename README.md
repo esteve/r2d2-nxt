@@ -12,3 +12,5 @@ r2d2-nxt is a C++ library for programming Lego NXT robots using either the USB o
 Future features:
 - NXT 2.0 and 3rd party sensors (Color, Camera, etc.)
 - Support for Bluetooth on Windows
+
+You can find the documentaion for r2d2-nxt at http://esteve.github.io/r2d2-nxt/
