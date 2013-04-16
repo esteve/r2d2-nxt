@@ -106,21 +106,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00025"></a>00025 <span class="preprocessor">#include &lt;IOBluetooth/Bluetooth.h&gt;</span>
 <a name="l00026"></a>00026 <span class="preprocessor">#include &lt;IOBluetooth/IOBluetoothUserLib.h&gt;</span>
 <a name="l00027"></a>00027 
-<a name="l00028"></a><a class="code" href="classBTTransport.html">00028</a> <span class="keyword">class </span><a class="code" href="classBTTransport.html">BTTransport</a> : <span class="keyword">public</span> Transport {
-<a name="l00029"></a>00029 <span class="keyword">private</span>:
-<a name="l00030"></a>00030     <span class="keyword">const</span> BluetoothDeviceAddress *addr_;
-<a name="l00031"></a>00031     IOBluetoothRFCOMMChannelRef rfcommChannelRef_;
-<a name="l00032"></a>00032 <span class="keyword">public</span>:
-<a name="l00033"></a>00033     <a class="code" href="classBTTransport.html">BTTransport</a>(<span class="keyword">const</span> BluetoothDeviceAddress *addr);
-<a name="l00034"></a>00034     ~<a class="code" href="classBTTransport.html">BTTransport</a>();
-<a name="l00035"></a>00035 
-<a name="l00036"></a>00036     <span class="keywordtype">bool</span> open();
-<a name="l00037"></a>00037 
-<a name="l00038"></a>00038     <span class="keywordtype">void</span> devWrite(<span class="keywordtype">bool</span> requiresResponse, uint8_t *buf, <span class="keywordtype">int</span> buf_size, uint8_t *re_buf, <span class="keywordtype">int</span> re_buf_size);
-<a name="l00039"></a>00039 };
-<a name="l00040"></a>00040 
-<a name="l00041"></a>00041 <span class="keywordtype">void</span> addBTDeviceToList(<span class="keyword">const</span> BluetoothDeviceAddress *addr, <span class="keywordtype">void</span> *arg);
-<a name="l00042"></a>00042 <span class="preprocessor">#endif</span>
+<a name="l00028"></a>00028 <span class="keyword">namespace </span>r2d2 {
+<a name="l00029"></a>00029 <span class="keyword">class </span>BTTransport : <span class="keyword">public</span> Transport {
+<a name="l00030"></a>00030 <span class="keyword">private</span>:
+<a name="l00031"></a>00031     <span class="keyword">const</span> BluetoothDeviceAddress *addr_;
+<a name="l00032"></a>00032     IOBluetoothRFCOMMChannelRef rfcommChannelRef_;
+<a name="l00033"></a>00033 <span class="keyword">public</span>:
+<a name="l00034"></a>00034     BTTransport(<span class="keyword">const</span> BluetoothDeviceAddress *addr);
+<a name="l00035"></a>00035     ~BTTransport();
+<a name="l00036"></a>00036 
+<a name="l00037"></a>00037     <span class="keywordtype">bool</span> open();
+<a name="l00038"></a>00038 
+<a name="l00039"></a>00039     <span class="keywordtype">void</span> devWrite(<span class="keywordtype">bool</span> requiresResponse, uint8_t *buf, <span class="keywordtype">int</span> buf_size, uint8_t *re_buf, <span class="keywordtype">int</span> re_buf_size);
+<a name="l00040"></a>00040 };
+<a name="l00041"></a>00041 
+<a name="l00042"></a>00042 <span class="keywordtype">void</span> addBTDeviceToList(<span class="keyword">const</span> BluetoothDeviceAddress *addr, <span class="keywordtype">void</span> *arg);
+<a name="l00043"></a>00043 }
+<a name="l00044"></a>00044 <span class="preprocessor">#endif</span>
 </pre></div></div><!-- contents -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -139,7 +141,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 16 2013 02:20:06 for R2D2-NXT by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 02:42:08 for R2D2-NXT by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

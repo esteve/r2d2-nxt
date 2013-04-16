@@ -104,7 +104,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">r2d2::BTTransport Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<!-- doxytag: class="r2d2::BTTransport" --><!-- doxytag: inherits="r2d2::Transport" --><div class="dynheader">
+<!-- doxytag: class="r2d2::BTTransport" --><!-- doxytag: inherits="r2d2::Transport,r2d2::Transport" --><div class="dynheader">
 Inheritance diagram for r2d2::BTTransport:</div>
 <div class="dyncontent">
 <div class="center"><img src="classr2d2_1_1BTTransport__inherit__graph.png" border="0" usemap="#r2d2_1_1BTTransport_inherit__map" alt="Inheritance graph"/></div>
@@ -123,16 +123,24 @@ Collaboration diagram for r2d2::BTTransport:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab812200e38da9f2779676f70394317fb"></a><!-- doxytag: member="r2d2::BTTransport::BTTransport" ref="ab812200e38da9f2779676f70394317fb" args="(void *addr)" -->
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa884e1921fcdac30bc4af291910cb91f"></a><!-- doxytag: member="r2d2::BTTransport::BTTransport" ref="aa884e1921fcdac30bc4af291910cb91f" args="(void *addr)" -->
 &#160;</td><td class="memItemRight" valign="bottom"><b>BTTransport</b> (void *addr)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3a68daa1cf216fec0734bd63377ef4df"></a><!-- doxytag: member="r2d2::BTTransport::open" ref="a3a68daa1cf216fec0734bd63377ef4df" args="()" -->
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ab2ab78e3878c07d0155fec6127e339"></a><!-- doxytag: member="r2d2::BTTransport::open" ref="a0ab2ab78e3878c07d0155fec6127e339" args="()" -->
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>open</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a56f00c3e1a0648b34911286f6ea00d46"></a><!-- doxytag: member="r2d2::BTTransport::devWrite" ref="a56f00c3e1a0648b34911286f6ea00d46" args="(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size)" -->
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a90d99ca7a50fe7303af66cf2f9903059"></a><!-- doxytag: member="r2d2::BTTransport::devWrite" ref="a90d99ca7a50fe7303af66cf2f9903059" args="(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>devWrite</b> (bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a29770aa8111d88615b6d16afb2831c52"></a><!-- doxytag: member="r2d2::BTTransport::BTTransport" ref="a29770aa8111d88615b6d16afb2831c52" args="(const BluetoothDeviceAddress *addr)" -->
+&#160;</td><td class="memItemRight" valign="bottom"><b>BTTransport</b> (const BluetoothDeviceAddress *addr)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ab2ab78e3878c07d0155fec6127e339"></a><!-- doxytag: member="r2d2::BTTransport::open" ref="a0ab2ab78e3878c07d0155fec6127e339" args="()" -->
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>open</b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a90d99ca7a50fe7303af66cf2f9903059"></a><!-- doxytag: member="r2d2::BTTransport::devWrite" ref="a90d99ca7a50fe7303af66cf2f9903059" args="(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size)" -->
 void&#160;</td><td class="memItemRight" valign="bottom"><b>devWrite</b> (bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size)</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/r2d2/<a class="el" href="linux__bluetooth_8hpp_source.html">linux_bluetooth.hpp</a></li>
+<li>include/r2d2/<a class="el" href="osx__bluetooth_8hpp_source.html">osx_bluetooth.hpp</a></li>
 <li>src/linux_bluetooth.cpp</li>
+<li>src/osx_bluetooth.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- window showing the filter options -->
@@ -152,7 +160,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>devWrite</b> (bool re
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 16 2013 02:20:06 for R2D2-NXT by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Apr 16 2013 02:42:08 for R2D2-NXT by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

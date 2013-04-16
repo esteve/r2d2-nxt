@@ -1,3 +1,10 @@
 <map id="G" name="G">
-<area shape="rect" id="node1" href="$classr2d2_1_1NXT.html" title="r2d2::NXT" alt="" coords="5,5,88,35"/>
+<area shape="rect" id="node1" href="$classr2d2_1_1Sensor.html" title="r2d2::Sensor" alt="" coords="5,152,101,181"/>
+<area shape="rect" id="node3" href="$classr2d2_1_1AnalogSensor.html" title="r2d2::AnalogSensor" alt="" coords="149,85,285,115"/>
+<area shape="rect" id="node11" href="$classr2d2_1_1DigitalSensor.html" title="r2d2::DigitalSensor" alt="" coords="151,152,284,181"/>
+<area shape="rect" id="node15" href="$classr2d2_1_1NullSensor.html" title="r2d2::NullSensor" alt="" coords="159,205,276,235"/>
+<area shape="rect" id="node5" href="$classr2d2_1_1ActiveLightSensor.html" title="r2d2::ActiveLightSensor" alt="" coords="339,5,499,35"/>
+<area shape="rect" id="node7" href="$classr2d2_1_1PassiveLightSensor.html" title="r2d2::PassiveLightSensor" alt="" coords="333,59,504,88"/>
+<area shape="rect" id="node9" href="$classr2d2_1_1TouchSensor.html" title="r2d2::TouchSensor" alt="" coords="353,112,484,141"/>
+<area shape="rect" id="node13" href="$classr2d2_1_1SonarSensor.html" title="r2d2::SonarSensor" alt="" coords="353,165,484,195"/>
 </map>
