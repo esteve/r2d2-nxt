@@ -154,8 +154,9 @@ double Brick::getFirmwareVersion() {
 
     double version = outBuf[min];
 
-    while (version >= 1)
+    while (version >= 1) {
         version /= 10;
+    }
     version += outBuf[maj];
 
     return version;
@@ -191,45 +192,45 @@ Brick::Brick(Comm *comm) {
 }
 
 NXT* Brick::configure(SensorType sensor1, SensorType sensor2,
-        SensorType sensor3, SensorType sensor4,
-        MotorType motorA, MotorType motorB, MotorType motorC) {
+                      SensorType sensor3, SensorType sensor4,
+                      MotorType motorA, MotorType motorB, MotorType motorC) {
 
-     if (!this->open()) {
-         // TODO raise an exception
-         return nullptr;
-     }
+    if (!this->open()) {
+        // TODO raise an exception
+        return nullptr;
+    }
 
-     Sensor* sensorObject1 = this->sensorFactory.makeSensor(sensor1, SensorPort::IN_1, this->comm_);
-     Sensor* sensorObject2 = this->sensorFactory.makeSensor(sensor2, SensorPort::IN_2, this->comm_);
-     Sensor* sensorObject3 = this->sensorFactory.makeSensor(sensor3, SensorPort::IN_3, this->comm_);
-     Sensor* sensorObject4 = this->sensorFactory.makeSensor(sensor4, SensorPort::IN_4, this->comm_);
+    Sensor* sensorObject1 = this->sensorFactory.makeSensor(sensor1, SensorPort::IN_1, this->comm_);
+    Sensor* sensorObject2 = this->sensorFactory.makeSensor(sensor2, SensorPort::IN_2, this->comm_);
+    Sensor* sensorObject3 = this->sensorFactory.makeSensor(sensor3, SensorPort::IN_3, this->comm_);
+    Sensor* sensorObject4 = this->sensorFactory.makeSensor(sensor4, SensorPort::IN_4, this->comm_);
 
-     Motor* motorObjectA = this->motorFactory.makeMotor(motorA, MotorPort::OUT_A, this->comm_);
-     Motor* motorObjectB = this->motorFactory.makeMotor(motorB, MotorPort::OUT_B, this->comm_);
-     Motor* motorObjectC = this->motorFactory.makeMotor(motorC, MotorPort::OUT_C, this->comm_);
+    Motor* motorObjectA = this->motorFactory.makeMotor(motorA, MotorPort::OUT_A, this->comm_);
+    Motor* motorObjectB = this->motorFactory.makeMotor(motorB, MotorPort::OUT_B, this->comm_);
+    Motor* motorObjectC = this->motorFactory.makeMotor(motorC, MotorPort::OUT_C, this->comm_);
 
-     NXT *nxt = new NXT(this, this->comm_,
-         sensorObject1, sensorObject2, sensorObject3, sensorObject4,
-         motorObjectA, motorObjectB, motorObjectC);
+    NXT *nxt = new NXT(this, this->comm_,
+                       sensorObject1, sensorObject2, sensorObject3, sensorObject4,
+                       motorObjectA, motorObjectB, motorObjectC);
 
-     return nxt;
+    return nxt;
 }
 
 NXT::NXT(Brick *brick, Comm *comm, Sensor *sensor1, Sensor *sensor2,
-        Sensor *sensor3, Sensor *sensor4,
-        Motor *motorA, Motor *motorB, Motor *motorC) {
-     this->brick_ = brick;
+         Sensor *sensor3, Sensor *sensor4,
+         Motor *motorA, Motor *motorB, Motor *motorC) {
+    this->brick_ = brick;
 
-     this->comm_ = comm;
+    this->comm_ = comm;
 
-     this->sensorPort1 = sensor1;
-     this->sensorPort2 = sensor2;
-     this->sensorPort3 = sensor3;
-     this->sensorPort4 = sensor4;
+    this->sensorPort1 = sensor1;
+    this->sensorPort2 = sensor2;
+    this->sensorPort3 = sensor3;
+    this->sensorPort4 = sensor4;
 
-     this->motorPortA = motorA;
-     this->motorPortB = motorB;
-     this->motorPortC = motorC;
+    this->motorPortA = motorA;
+    this->motorPortB = motorB;
+    this->motorPortC = motorC;
 }
 
 void Brick::playTone(uint16_t frequency, uint16_t duration) {

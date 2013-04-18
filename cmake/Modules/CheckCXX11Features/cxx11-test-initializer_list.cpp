@@ -10,17 +10,14 @@ private:
 };
 
 seq::seq(std::initializer_list<int> list)
-    : m_v(list)
-{
+    : m_v(list) {
 }
 
-int seq::length() const
-{
+int seq::length() const {
     return m_v.size();
 }
 
-int main(void)
-{
+int main(void) {
     seq a = {18, 20, 2, 0, 4, 7};
 
     return (a.length() == 6) ? 0 : 1;

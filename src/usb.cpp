@@ -64,7 +64,7 @@ void USBTransport::devWrite(bool requiresResponse, uint8_t * buf, int buf_size, 
                 std::cerr << "READ: " << re_actual_length << std::endl;
                 std::cerr << "BUF LEN: " << re_buf_size << std::endl;
                 std::cerr << "RES: " << r2 << std::endl;
-           }
+            }
         }
     }
 }
