@@ -111,20 +111,20 @@ int StandardMotor::getRotationCount() {
 
     Message response(s);
 
-/*
-    port = tgram.parse_u8() 3
-    power = tgram.parse_s8() 4
+    /*
+        port = tgram.parse_u8() 3
+        power = tgram.parse_s8() 4
 
-    mode = tgram.parse_u8() 5
-    regulation = tgram.parse_u8() 6
-    turn_ratio = tgram.parse_s8() 7
-    run_state = tgram.parse_u8() 8
+        mode = tgram.parse_u8() 5
+        regulation = tgram.parse_u8() 6
+        turn_ratio = tgram.parse_s8() 7
+        run_state = tgram.parse_u8() 8
 
-    tacho_limit = tgram.parse_u32() 9,10,11,12
-    tacho_count = tgram.parse_s32() 13,14,15,16
-    block_tacho_count = tgram.parse_s32() 17,18,19,20
-    rotation_count = tgram.parse_s32() 21,22,23,24,25
-*/
+        tacho_limit = tgram.parse_u32() 9,10,11,12
+        tacho_count = tgram.parse_s32() 13,14,15,16
+        block_tacho_count = tgram.parse_s32() 17,18,19,20
+        rotation_count = tgram.parse_s32() 21,22,23,24,25
+    */
 
     response.parse_u8(); // 2 check status
 
@@ -146,12 +146,15 @@ int StandardMotor::getRotationCount() {
     int tacho2 = response.parse_s32(); // 21,22,23,24 calibrated value
 
     int i = responseBuffer[21];
-    if(i < 0)
-            i = 256 + i;
-    if(responseBuffer[23] == -1)
-            responseBuffer[23] = 0;
-    if(responseBuffer[24] == -1)
-            responseBuffer[24] = 0;
+    if(i < 0) {
+        i = 256 + i;
+    }
+    if(responseBuffer[23] == -1) {
+        responseBuffer[23] = 0;
+    }
+    if(responseBuffer[24] == -1) {
+        responseBuffer[24] = 0;
+    }
 
     int tacho = (responseBuffer[24] << 24) + (responseBuffer[23] << 16) + (responseBuffer[22] << 8) + i;
 

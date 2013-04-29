@@ -19,9 +19,9 @@
 
 /**
  \mainpage R2D2-NXT
- 
+
  \section intro_sec Introduction
- 
+
  r2d2-nxt is a C++ library for programming Lego NXT robots using either the USB or the Bluetooth interfaces. It supports
  Linux, Microsoft Windows (tested on 7) and Mac OS X.
 
@@ -146,11 +146,11 @@ class NXT;
 
 /**
 An unconfigured NXT brick, without any sensors or motors attached.
- 
+
 An unconfigured NXT brick can issue system commands such as Brick::getFirmware
 or Brick::getDeviceInfo, but it doesn't have any sensors or motors attached,
 instead use Brick::configure to setup an NXT layout.
- 
+
 */
 class Brick {
 private:
@@ -164,28 +164,28 @@ public:
 
     /**
     Open the underlying transport.
- 
+
     @return A bool whether the transport was successfully opened.
     */
     bool open();
 
     /**
     Obtain the NXT brick name.
- 
+
     @return std::string A std::string with the name of the NXT brick.
     */
     std::string getName();
 
     /**
     Obtain the NXT firmware version.
- 
+
     @return A double with the firmware version of the NXT brick.
-    */ 
+    */
     double getFirmwareVersion();
 
     /**
     Obtain information about the NXT brick.
- 
+
     @param uint8_t* A uint8_t* buffer to store the device information.
     @param size_t A size_t with the size of the buffer.
     */
@@ -214,7 +214,7 @@ public:
 
     /**
     Interrupt any sound currently playing in the NXT brick.
-    */ 
+    */
     void stopSound();
 
     /**
@@ -231,8 +231,8 @@ public:
     @return A fully configured NXT object.
     */
     NXT* configure(SensorType sensor1, SensorType sensor2,
-        SensorType sensor3, SensorType sensor4,
-        MotorType motorA, MotorType motorB, MotorType motorC);
+                   SensorType sensor3, SensorType sensor4,
+                   MotorType motorA, MotorType motorB, MotorType motorC);
 };
 
 class NXT {
@@ -282,7 +282,7 @@ public:
 
     @param port One of the MotorPort enum values.
     @return A Motor instance.
-    */ 
+    */
     Motor *motorPort(MotorPort port) {
         switch(port) {
             case MotorPort::OUT_A:
@@ -315,7 +315,7 @@ public:
 
     /**
     @see Brick::halt()
-    */ 
+    */
     void halt();
 
     /**

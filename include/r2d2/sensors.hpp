@@ -88,7 +88,9 @@ public:
 class NullSensor : public Sensor {
 public:
     NullSensor(SensorPort port) : Sensor(nullptr, port, SensorType::NULL_SENSOR, Mode::RAW) { };
-    int getValue() { return 0; };
+    int getValue() {
+        return 0;
+    };
 };
 
 class AnalogSensor : public Sensor {

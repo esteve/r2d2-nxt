@@ -32,8 +32,8 @@ enum class MotorPort : uint8_t {
 };
 
 enum class MotorType {
-     STANDARD_MOTOR,
-     NULL_MOTOR
+    STANDARD_MOTOR,
+    NULL_MOTOR
 };
 
 class Motor {
@@ -63,7 +63,9 @@ class NullMotor : public Motor {
 
     void resetRotationCount(bool relative) { }
 
-    int getRotationCount() { return 0; }
+    int getRotationCount() {
+        return 0;
+    }
 };
 
 class StandardMotor : public Motor {

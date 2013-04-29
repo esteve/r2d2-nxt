@@ -41,13 +41,13 @@ void BTTransport::devWrite(bool requiresResponse, uint8_t* buf, int buf_size, ui
     if(requiresResponse) {
         // The Bluetooth transport starts with a header with the length
         // of the messages
- 
+
         char reply[64];
         memset(reply, 0, sizeof(reply));
- 
+
         // read data from the client
         int bytes_read = read(this->sock_, reply, 2);
- 
+
         if ( bytes_read > 0 ) {
             int replylength = reply[0] + (reply[1] * 256);
             bytes_read = read(this->sock_, reply, replylength);

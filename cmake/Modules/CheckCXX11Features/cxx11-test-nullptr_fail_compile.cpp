@@ -1,6 +1,5 @@
-int main(void)
-{
-	int i = nullptr;
+int main(void) {
+    int i = nullptr;
 
-	return 1;
+    return 1;
 }

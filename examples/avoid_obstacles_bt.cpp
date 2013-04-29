@@ -38,8 +38,8 @@ public:
         r2d2::Brick* brick = bm.list()->at(0);
 
         nxt = brick->configure(r2d2::SensorType::TOUCH_SENSOR, r2d2::SensorType::TOUCH_SENSOR,
-        r2d2::SensorType::SONAR_SENSOR, r2d2::SensorType::NULL_SENSOR, r2d2::MotorType::STANDARD_MOTOR,
-        r2d2::MotorType::STANDARD_MOTOR, r2d2::MotorType::STANDARD_MOTOR);
+                               r2d2::SensorType::SONAR_SENSOR, r2d2::SensorType::NULL_SENSOR, r2d2::MotorType::STANDARD_MOTOR,
+                               r2d2::MotorType::STANDARD_MOTOR, r2d2::MotorType::STANDARD_MOTOR);
     }
 
     void setLeftSpin() {

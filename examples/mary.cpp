@@ -27,8 +27,7 @@ void play(r2d2::Brick *brick, int note) {
     }
 }
 
-int main()
-{
+int main() {
     std::cout << "R2D2-NXT test project" << std::endl;
 
     r2d2::USBBrickManager usbm;
@@ -37,10 +36,11 @@ int main()
         std::cout << brick->getName() << std::endl;
 
         int song[] = {E, D, C, D, E, E, E, R,
-             D, D, D, R,
-             E, G, G, R, E, D, C, D, E, E, E, E, D, D, E, D, C};
+                      D, D, D, R,
+                      E, G, G, R, E, D, C, D, E, E, E, E, D, D, E, D, C
+                     };
 
-        for(int i=0;i < 29; i++) {
+        for(int i=0; i < 29; i++) {
             play(brick, song[i]);
         }
     }
