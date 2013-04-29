@@ -248,4 +248,18 @@ void Brick::stopSound() {
     msg.add_u8(uint8_t(Opcode::STOP_SOUND));
     this->comm_->sendMessage(msg, NULL, 0);
 }
+
+void Brick::setName(const std::string& name) {
+    Message msg(false, false);
+    std::string bname = name.substr(0, 15);
+    for(int i=0; i < (15 - name.size()); ++i) {
+        bname.push_back(0x00);
+    }
+
+    msg.add_u8(uint8_t(Opcode::SET_NAME));
+    msg.add_string(bname.size(), bname);
+
+    this->comm_->sendMessage(msg, NULL, 0);
 }
+
+} // namespace r2d2

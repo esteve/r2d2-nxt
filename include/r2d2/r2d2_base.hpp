@@ -90,7 +90,9 @@ enum class Opcode : uint8_t {
 
     GET_FIRMWARE_VERSION = 0x88,
 
-    GET_DEVICE_INFO = 0x9B
+    GET_DEVICE_INFO = 0x9B,
+
+    SET_NAME = 0x98
 };
 
 class Message {
@@ -216,6 +218,11 @@ public:
     Interrupt any sound currently playing in the NXT brick.
     */
     void stopSound();
+
+    /**
+    Set the Brick's name.
+    */
+    void setName(const std::string&);
 
     /**
     Configure a Brick with a Sensor and Motor layout.
