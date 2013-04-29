@@ -1,11 +1,11 @@
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 #include <r2d2/sensors.hpp>
 
 #include <cstring>
 
 #include <iostream>
 
-
+namespace r2d2 {
 void LSMessage::add_u8(uint8_t v) {
     this->sstream_ << v;
 }
@@ -183,4 +183,5 @@ Sensor * SensorFactory::makeSensor(SensorType type, SensorPort port, Comm *comm)
     }
 
     return sensor;
+}
 }

@@ -24,6 +24,7 @@
 
 #include <r2d2/comm.hpp>
 
+namespace r2d2 {
 enum class MotorPort : uint8_t {
     OUT_A = 0,
     OUT_B = 1,
@@ -31,8 +32,8 @@ enum class MotorPort : uint8_t {
 };
 
 enum class MotorType {
-     STANDARD_MOTOR,
-     NULL_MOTOR
+    STANDARD_MOTOR,
+    NULL_MOTOR
 };
 
 class Motor {
@@ -62,7 +63,9 @@ class NullMotor : public Motor {
 
     void resetRotationCount(bool relative) { }
 
-    int getRotationCount() { return 0; }
+    int getRotationCount() {
+        return 0;
+    }
 };
 
 class StandardMotor : public Motor {
@@ -83,4 +86,5 @@ public:
 
     int getRotationCount();
 };
+}
 #endif

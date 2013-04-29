@@ -20,10 +20,11 @@
 #ifndef R2D2_LINUX_BLUETOOTH_HPP
 #define R2D2_LINUX_BLUETOOTH_HPP
 #include <vector>
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 
 #define NXT_BLUETOOTH_ADDRESS "00:16:53"
 
+namespace r2d2 {
 class BTTransport : public Transport {
 private:
     void *addr_; // this is actually a pointer to a struct sockaddr_rc
@@ -35,9 +36,8 @@ public:
     bool open();
 
     void devWrite(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size);
-
-    void devRead(uint8_t *buf, int buf_size);
 };
 
 void addBTDeviceToList(void *addr, void *arg);
+}
 #endif

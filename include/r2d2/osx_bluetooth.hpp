@@ -20,11 +20,12 @@
 #ifndef R2D2_OSX_BLUETOOTH_HPP
 #define R2D2_OSX_BLUETOOTH_HPP
 #include <vector>
-#include <r2d2.hpp>
+#include <r2d2/r2d2_base.hpp>
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOBluetooth/Bluetooth.h>
 #include <IOBluetooth/IOBluetoothUserLib.h>
 
+namespace r2d2 {
 class BTTransport : public Transport {
 private:
     const BluetoothDeviceAddress *addr_;
@@ -36,9 +37,8 @@ public:
     bool open();
 
     void devWrite(bool requiresResponse, uint8_t *buf, int buf_size, uint8_t *re_buf, int re_buf_size);
-
-    void devRead(uint8_t *buf, int buf_size);
 };
 
 void addBTDeviceToList(const BluetoothDeviceAddress *addr, void *arg);
+}
 #endif

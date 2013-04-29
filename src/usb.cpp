@@ -5,6 +5,8 @@
 
 #include <r2d2/usb.hpp>
 
+namespace r2d2 {
+
 bool USBTransport::open() {
 
     int nEp = 0;
@@ -62,22 +64,7 @@ void USBTransport::devWrite(bool requiresResponse, uint8_t * buf, int buf_size, 
                 std::cerr << "READ: " << re_actual_length << std::endl;
                 std::cerr << "BUF LEN: " << re_buf_size << std::endl;
                 std::cerr << "RES: " << r2 << std::endl;
-           }
-        }
-    }
-}
-
-void USBTransport::devRead(unsigned char * buf, int buf_size) {
-    std::lock_guard<std::mutex> lock(this->io_mutex);
-    if (this->pUSBHandle_) {
-        int actual_length;
-        int r = libusb_bulk_transfer(this->pUSBHandle_, this->ucEpOut_, buf, buf_size, &actual_length, TIMEOUT);
-        if (r == 0 && actual_length <= buf_size) {
-        } else {
-            std::cerr << "ERROR READING" << std::endl;
-            std::cerr << "READ: " << actual_length << std::endl;
-            std::cerr << "BUF LEN: " << buf_size << std::endl;
-            std::cerr << "RES: " << r << std::endl;
+            }
         }
     }
 }
@@ -140,9 +127,10 @@ std::vector<Brick *>* USBBrickManager::list() {
     }
 
 
-    cnt = libusb_get_device_list(ctx, &devs); //get the list of devices
+    // Get the list of all the USB devices
+    cnt = libusb_get_device_list(ctx, &devs);
     if (cnt < 0) {
-        std::cout<<"Get Device Error"<<std::endl; //there was an error
+        std::cout << "Error getting device" <<std::endl;
         return v;
     }
 
@@ -165,4 +153,5 @@ std::vector<Brick *>* USBBrickManager::list() {
     libusb_free_device_list(devs, 1); //free the list, unref the devices in it
 //        libusb_exit(ctx); //close the session
     return v;
+}
 }

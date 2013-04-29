@@ -24,6 +24,7 @@
 
 #include <r2d2/comm.hpp>
 
+namespace r2d2 {
 class LSMessage {
 private:
     std::stringstream sstream_;
@@ -87,7 +88,9 @@ public:
 class NullSensor : public Sensor {
 public:
     NullSensor(SensorPort port) : Sensor(nullptr, port, SensorType::NULL_SENSOR, Mode::RAW) { };
-    int getValue() { return 0; };
+    int getValue() {
+        return 0;
+    };
 };
 
 class AnalogSensor : public Sensor {
@@ -125,4 +128,5 @@ public:
     SonarSensor(Comm *comm, SensorPort port) : DigitalSensor(comm, port) { };
     int getValue();
 };
+}
 #endif
